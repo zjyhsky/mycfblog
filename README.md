@@ -78,7 +78,7 @@ Flare Stack Blog 是一个深度拥抱 Cloudflare 生态的开源独立博客系
      bun install && bun run wrangler:prepare && bun run build && bun db:migrate
      ```
    - **部署命令（Deploy command）**：填 `wrangler deploy`（默认即此，可显式写出）。
-   - **环境变量 / 构建变量（Build variables，明文）**：逐项添加步骤 1 的 6 个值：
+   - **构建变量（Build variables，明文，仅构建期使用）**：逐项添加步骤 1 的 6 个值，云端 `wrangler:prepare` 会据此生成 `wrangler.jsonc`：
      | 变量名 | 填什么 |
      | :--- | :--- |
      | `WORKER_NAME` | 与上面 Worker 名称一致 |
@@ -87,14 +87,22 @@ Flare Stack Blog 是一个深度拥抱 Cloudflare 生态的开源独立博客系
      | `D1_DATABASE_ID` | D1 数据库 ID |
      | `KV_NAMESPACE_ID` | KV 命名空间 ID |
      | `BUCKET_NAME` | R2 桶名称 |
-   - **密钥（Variables and Secrets，加密，类型选 secret）**：逐项添加（值不回显）：
+     | `ROUTE` / `ZONE_NAME` | 可选；改用 Workers Routes 模式时 `ROUTE=1` 并填 `ZONE_NAME=example.com` |
+   - **运行期变量（Worker → 设置 → 变量和机密 → 变量，明文）**：这些会被运行中的 Worker 读取（`src/lib/env/server.env.ts` 校验），**必须单独设置**，构建变量不会自动注入运行时：
      | 变量名 | 填什么 |
      | :--- | :--- |
-     | `BETTER_AUTH_SECRET` | 一段随机长字符串（任意密码生成器生成） |
+     | `DOMAIN` | 与上面构建变量 `DOMAIN` 完全一致（如 `blog.example.com`，不带 https） |
+     | `ENVIRONMENT` | 设为 `prod`（生产环境；不要设 `dev`） |
+     | `UMAMI_WEBSITE_ID` / `UMAMI_SRC` / `UMAMI_API_KEY` 等 | 可选；启用 Umami 统计时填（客户端还需构建变量 `VITE_UMAMI_WEBSITE_ID`） |
+     | `TURNSTILE_SECRET_KEY` | 可选；启用 Turnstile 时填（客户端还需构建变量 `VITE_TURNSTILE_SITE_KEY`） |
+     | `GITHUB_TOKEN` | 可选；放宽 GitHub API 限流用 |
+   - **密钥（Worker → 设置 → 变量和机密 → 机密，加密，类型选 secret）**：逐项添加（值不回显）：
+     | 变量名 | 填什么 |
+     | :--- | :--- |
+     | `BETTER_AUTH_SECRET` | 一段随机长字符串（如密码生成器生成的 32+ 位随机串） |
      | `BETTER_AUTH_URL` | 完整 https 地址，如 `https://blog.example.com` |
      | `GITHUB_CLIENT_ID` | GitHub OAuth App 的 Client ID（回调填 `https://你的域名/api/auth/callback/github`）；暂不用 GitHub 登录可留空 |
      | `GITHUB_CLIENT_SECRET` | 对应 Secret；同上可留空 |
-   - （可选）构建期注入前端变量（明文 Build variables）：`VITE_TURNSTILE_SITE_KEY`、`VITE_UMAMI_WEBSITE_ID`。
 4. 点击「保存并部署 / Deploy」。控制台会拉取代码、按上面命令构建并发布。首次部署会依据 `DOMAIN` 自动在你的 zone 下添加**自定义域**并申请 SSL 证书（可能需在「设置 → 自定义域」里确认一次证书状态）。
 
 #### 步骤 4 ·（可选）确认 D1 表已建立
