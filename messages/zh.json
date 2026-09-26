@@ -1839,5 +1839,6 @@
   "settings_backup_error_too_large": "备份包超出了大小上限。",
   "settings_backup_error_archive": "上传的文件无法解析成备份包。",
   "settings_backup_error_upload": "备份包暂存失败，请重试。",
-  "settings_backup_error_unknown": "操作失败，请重试。"
+  "settings_backup_error_unknown": "操作失败，请重试。",
+  "settings_backup_warn_truncated": "文章数量超出单次导出上限，本次只打包了最新的 {count} 篇。"
 }

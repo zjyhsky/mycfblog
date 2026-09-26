@@ -90,6 +90,8 @@ function warningText(warning: ImportWarning): string {
       return m.settings_backup_warn_empty();
     case "INVALID_METADATA":
       return m.settings_backup_warn_invalid_metadata({ title });
+    case "TRUNCATED":
+      return m.settings_backup_warn_truncated({ count: detail });
     default:
       return detail ? `${warning.code}: ${detail}` : warning.code;
   }
@@ -223,8 +225,12 @@ export function BackupRestoreSection() {
     if (task.status === "completed") {
       setDownloadTaskId(exportTaskId);
       setExportTaskId(null);
+      const firstWarning =
+        task.warnings.length > 0 ? parseWarning(task.warnings[0]) : null;
       toast.success(m.settings_backup_export_toast_done(), {
-        description: m.settings_backup_export_done({ total: task.total }),
+        description: firstWarning
+          ? `${m.settings_backup_export_done({ total: task.total })} ${warningText(firstWarning)}`
+          : m.settings_backup_export_done({ total: task.total }),
         action: {
           label: m.settings_backup_export_download(),
           onClick: () =>

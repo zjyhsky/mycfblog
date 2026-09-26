@@ -1,5 +1,5 @@
 import type { JSONContent } from "@tiptap/react";
-import { eq } from "drizzle-orm";
+import { eq, inArray } from "drizzle-orm";
 import { insertComment } from "@/features/comments/data/comments.data";
 import type { PostEntry } from "@/features/import-export/import-export.schema";
 import {
@@ -383,9 +383,14 @@ async function uploadMarkdownImages(
   mdDir: string,
 ): Promise<{ rewrittenMarkdown: string; warnings: Array<string>; uploadedCount: number }> {
   const warnings: Array<string> = [];
-  const relativeImages = extractMarkdownImages(markdown).filter(
-    (image) => image.type === "relative",
-  );
+  // 同一张图在正文里被引用多次时只上传一次
+  const byOriginal = new Map<string, string>();
+  for (const image of extractMarkdownImages(markdown)) {
+    if (image.type === "relative" && !byOriginal.has(image.original)) {
+      byOriginal.set(image.original, image.original);
+    }
+  }
+  const relativeImages = [...byOriginal.keys()];
 
   if (relativeImages.length === 0) {
     return { rewrittenMarkdown: markdown, warnings, uploadedCount: 0 };
@@ -393,21 +398,21 @@ async function uploadMarkdownImages(
 
   const rewriteMap = new Map<string, string>();
 
-  for (const image of relativeImages) {
-    const resolvedPath = resolveRelativePath(mdDir, image.original);
+  for (const original of relativeImages) {
+    const resolvedPath = resolveRelativePath(mdDir, original);
     const imageData = files[resolvedPath];
 
     if (!imageData || imageData.length === 0) {
-      warnings.push(`IMAGE_MISSING:${image.original}`);
+      warnings.push(`IMAGE_MISSING:${original}`);
       continue;
     }
 
     const fileName = resolvedPath.split("/").pop() ?? resolvedPath;
     const newKey = await storeImage(context, fileName, imageData);
     if (newKey) {
-      rewriteMap.set(image.original, `/images/${newKey}`);
+      rewriteMap.set(original, `/images/${newKey}`);
     } else {
-      warnings.push(`IMAGE_UPLOAD_FAILED:${image.original}`);
+      warnings.push(`IMAGE_UPLOAD_FAILED:${original}`);
     }
   }
 
@@ -465,33 +470,77 @@ export async function importComments(
   const warnings: Array<string> = [];
   if (comments.length === 0) return { restored: 0, warnings };
 
-  const posts = await db
-    .select({ id: PostsTable.id, slug: PostsTable.slug, publicSlug: PostsTable.publicSlug })
-    .from(PostsTable);
+  // 只查本次导入涉及的 slug，避免整表扫描（大站会把 Worker 内存打满）
+  const wantedSlugs = [...new Set(comments.map((comment) => comment.postSlug))];
+  const posts =
+    wantedSlugs.length === 0
+      ? []
+      : await db
+          .select({
+            id: PostsTable.id,
+            slug: PostsTable.slug,
+            publicSlug: PostsTable.publicSlug,
+          })
+          .from(PostsTable)
+          .where(inArray(PostsTable.slug, wantedSlugs));
   const postIdBySlug = new Map<string, number>();
   for (const post of posts) {
     postIdBySlug.set(post.slug, post.id);
     if (post.publicSlug) postIdBySlug.set(post.publicSlug, post.id);
   }
 
-  const userRows = await db.select({ id: user.id, email: user.email }).from(user);
-  const userIdByEmail = new Map<string, string>();
-  for (const row of userRows) userIdByEmail.set(row.email.toLowerCase(), row.id);
+  // publicSlug 与 slug 不同，单独再查一轮补齐
+  const missingSlugs = wantedSlugs.filter((slug) => !postIdBySlug.has(slug));
+  if (missingSlugs.length > 0) {
+    const byPublicSlug = await db
+      .select({ id: PostsTable.id, publicSlug: PostsTable.publicSlug })
+      .from(PostsTable)
+      .where(inArray(PostsTable.publicSlug, missingSlugs));
+    for (const post of byPublicSlug) {
+      if (post.publicSlug) postIdBySlug.set(post.publicSlug, post.id);
+    }
+  }
 
-  const existing = await db
-    .select({
-      postId: CommentsTable.postId,
-      content: CommentsTable.content,
-      createdAt: CommentsTable.createdAt,
-    })
-    .from(CommentsTable);
-  const seen = new Set(
-    existing.map(
-      (row) => `${row.postId}|${row.createdAt.getTime()}|${row.content ?? ""}`,
+  // 作者只查备份包里出现过的邮箱
+  const wantedEmails = [
+    ...new Set(
+      comments
+        .map((comment) => comment.authorEmail?.trim().toLowerCase())
+        .filter((email): email is string => Boolean(email)),
     ),
-  );
+  ];
+  const userIdByEmail = new Map<string, string>();
+  if (wantedEmails.length > 0) {
+    const userRows = await db
+      .select({ id: user.id, email: user.email })
+      .from(user)
+      .where(inArray(user.email, wantedEmails));
+    for (const row of userRows) userIdByEmail.set(row.email.toLowerCase(), row.id);
+  }
 
-  // 先按原 id 建映射，再还原引用关系（父评论 / 被回复评论）
+  // 已存在的评论只加载本次涉及的文章，命中去重时回填原 id 以保住层级关系
+  const targetPostIds = [...new Set(postIdBySlug.values())];
+  const existing = new Map<string, number>();
+  if (targetPostIds.length > 0) {
+    // inArray 单次参数过多会撞上 SQL 变量上限，分批查
+    for (let offset = 0; offset < targetPostIds.length; offset += 100) {
+      const batch = targetPostIds.slice(offset, offset + 100);
+      const rows = await db
+        .select({
+          id: CommentsTable.id,
+          postId: CommentsTable.postId,
+          content: CommentsTable.content,
+          createdAt: CommentsTable.createdAt,
+        })
+        .from(CommentsTable)
+        .where(inArray(CommentsTable.postId, batch));
+      for (const row of rows) {
+        const stamp = row.createdAt ? row.createdAt.getTime() : 0;
+        existing.set(`${row.postId}|${stamp}|${row.content ?? ""}`, row.id);
+      }
+    }
+  }
+
   const idMap = new Map<number, number>();
   let restored = 0;
 
@@ -505,9 +554,19 @@ export async function importComments(
     }
 
     const createdAt = new Date(comment.createdAt);
+    if (Number.isNaN(createdAt.getTime())) {
+      warnings.push(`COMMENT_RESTORE_FAILED:${comment.id}`);
+      continue;
+    }
+
     const dedupeKey = `${postId}|${createdAt.getTime()}|${comment.content ?? ""}`;
-    if (seen.has(dedupeKey)) continue;
-    seen.add(dedupeKey);
+    const alreadyThere = existing.get(dedupeKey);
+    if (alreadyThere !== undefined) {
+      // 已存在：把原 id 记进映射，子评论仍能挂到正确的父级
+      idMap.set(comment.id, alreadyThere);
+      continue;
+    }
+    existing.set(dedupeKey, -1);
 
     const authorId = comment.authorEmail
       ? (userIdByEmail.get(comment.authorEmail.toLowerCase()) ?? null)

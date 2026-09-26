@@ -1847,5 +1847,6 @@
   "settings_backup_error_too_large": "The archive exceeds the upload limit.",
   "settings_backup_error_archive": "The uploaded file is not a readable archive.",
   "settings_backup_error_upload": "Could not store the archive. Please retry.",
-  "settings_backup_error_unknown": "The operation failed. Please retry."
+  "settings_backup_error_unknown": "The operation failed. Please retry.",
+  "settings_backup_warn_truncated": "The post count exceeds the single-export limit, so only the newest {count} posts were packaged."
 }

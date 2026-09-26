@@ -32,6 +32,47 @@ Flare Stack Blog 是一个深度拥抱 Cloudflare 生态的开源独立博客系
   <img src="docs/assets/admin.png" alt="管理后台预览" width="49%">
 </div>
 
+## 本仓库改造版 · 部署与使用
+
+> 本仓库基于上游 [du2333/flare-stack-blog](https://github.com/du2333/flare-stack-blog) v2.2.0 做了功能增强。**部署到 Cloudflare 的方式与上游完全一致**，仅新增了下列能力；基础部署/OAuth 细节仍以上游 `docs/deployment.md` 为准。
+
+### 一、相对上游新增的能力
+- **后台账号密码登录**：独立 `/console` 入口（用户名 + 口令），登录后直接进入 `/admin`。
+- **广告接入**：Google AdSense 自动广告 + 4 个手动广告位（文章顶部 / 文章底部 / 列表页 / 侧边栏），并带 Cookie 同意。
+- **深色科技风 UI**：极光流动背景 + 噪点质感 + 霓虹描边卡片 + 渐变文字标题。
+- **导航可视化编辑**：后台「设置 → 站点」可增删导航项与下拉子菜单（"项目"类）。
+- **导航「文章」下拉**：直接列出最近文章，点击「查看全部」进入归档页看全部。
+- **全站数据备份与恢复**：导出/导入 ZIP（含文章、标签、分类、评论、友链、配置、图片）；也支持导入 Hugo / Hexo 的 Markdown。
+- 自定义 `ads.txt` 路由。
+
+### 二、要推送到 GitHub 的文件
+`.gitignore` 已覆盖构建产物与密钥，正常 `git add` 即可，重点如下：
+
+- ✅ **需要推送**：`src/`、`public/`、`migrations/`、`docs/`、`scripts/`、`package.json`、`bun.lock`、配置文件（`wrangler.example.jsonc`、`tsconfig*.json`、`drizzle.config.ts`、`app.config.ts`、`postcss.config.*`、`vite.config.*` 等）、`.env.example`、`README.md`、`LICENSE`。
+- ❌ **不要推送**：`node_modules/`、`.wrangler/`、`.output/`、`.vinxi/`、`dist/`、`wrangler.jsonc`（自动生成）、`.env` / `.dev.vars`（含密钥）、`*.local`、`.secrets`。
+- ⚠️ **依赖注意**：新增了 `fflate` / `gray-matter` / `marked` / `linkedom` 四个依赖（已写入 `package.json`）。请本地执行一次 `bun install` 重新生成 `bun.lock` 并一并提交，否则开启 `--frozen-lockfile` 的构建会失败。
+
+### 三、部署到 Cloudflare
+1. 把本仓库推到你的 GitHub（Fork 或新建仓库均可）。
+2. 本地 `bun install` → `bun run wrangler:prepare`，按 `.env.example` 填写 `WORKER_NAME` / `QUEUE_NAME` / `DOMAIN` / `D1_DATABASE_ID` / `KV_NAMESPACE_ID` / `BUCKET_NAME`。
+3. 在 Cloudflare 控制台创建资源并拿到 ID：**D1 数据库**、**R2 桶**、**KV 命名空间**、**Queue**；Durable Object（`RateLimiter` / `PostPublisher`）由迁移自动建立。
+4. 配置运行时机密（Cloudflare Builds 环境变量或 `wrangler secret put`）：`BETTER_AUTH_SECRET`、`BETTER_AUTH_URL`（完整 https 域名）、`GITHUB_CLIENT_ID` / `GITHUB_CLIENT_SECRET`。
+5. `bun run deploy`（或连接 Cloudflare Builds 自动部署）。每日 `15 0 * * *`（00:15）的 cron 用于热门度同步与过期备份清理。
+6. GitHub / Turnstile / Umami 等外部登录与统计的详细配置见上游 `docs/deployment.md`。
+
+### 四、后台与功能使用
+- 访问 `/console` 用「用户名 + 口令」登录 → 进入 `/admin`。首次使用先在「设置 → 安全」创建管理员账号。
+- **设置 → 站点**：可视化编辑顶部导航（含下拉子菜单）。
+- **设置 → 广告**：填写 AdSense 发布商 ID，开启自动广告与所需手动广告位。
+- **设置 → 维护**：
+  - **全站备份导出**：把文章 / 标签 / 分类 / 评论 / 友链 / 配置 / 图片打包成 ZIP，下载链接 **24 小时有效**。
+  - **备份数据恢复**：上传本系统导出的 `.zip`，或 Hugo / Hexo 的多个 `.md`（浏览器内自动打包）。同名文章跳过、其余合并；完成后给出逐项报告（新增 / 跳过 / 标签 / 分类 / 图片 / 评论 / 警告）。
+
+### 五、本地开发
+`bun install` → 复制 `.env.example` 为 `.env` → `bun run dev`。
+
+---
+
 ## 功能特性
 
 - 📝 **创作与内容管理**

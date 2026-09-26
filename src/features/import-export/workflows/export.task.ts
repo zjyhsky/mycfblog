@@ -92,14 +92,20 @@ export async function runExportTask(
   const warnings: Array<string> = [];
 
   try {
+    // 限量查询：Worker 内存与单次执行时长都有限，文章太多时只导出最新的一批
     const posts = await db.query.PostsTable.findMany({
       where: status ? eq(PostsTable.status, status) : undefined,
       orderBy: [desc(PostsTable.publishedAt), desc(PostsTable.id)],
+      limit: IMPORT_EXPORT_LIMITS.maxPosts,
       with: {
         postTags: { with: { tag: true } },
         category: true,
       },
     });
+
+    if (posts.length >= IMPORT_EXPORT_LIMITS.maxPosts) {
+      warnings.push(`TRUNCATED:${IMPORT_EXPORT_LIMITS.maxPosts}`);
+    }
 
     if (posts.length === 0) {
       await writeProgress(env, progressKey, {

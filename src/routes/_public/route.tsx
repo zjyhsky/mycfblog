@@ -4,7 +4,8 @@ import {
   useNavigate,
   useRouteContext,
 } from "@tanstack/react-router";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PublicLayout as SitePublicLayout } from "@/components/layout/public-layout";
 import { Toaster } from "@/components/layout/toaster";
 import { AdSenseRuntime } from "@/components/ads/adsense-runtime";
@@ -14,8 +15,12 @@ import { authClient } from "@/lib/auth/auth.client";
 import { CACHE_CONTROL } from "@/lib/constants";
 import { clientEnv } from "@/lib/env/client.env";
 import { isExternalNavHref } from "@/features/config/utils/nav-links";
-import type { NavOption } from "@/components/layout/layout-props";
+import { orpc } from "@/lib/orpc";
+import type { NavChildOption, NavOption } from "@/components/layout/layout-props";
 import { m } from "@/paraglide/messages";
+
+/** 导航「文章」下拉里最多展示的文章数（超过可滚动），点击「查看全部」进归档页看全部 */
+const NAV_POSTS_LIMIT = 30;
 
 export const Route = createFileRoute("/_public")({
   component: PublicLayout,
@@ -45,9 +50,30 @@ function PublicLayout() {
     authClient.useSession();
   const { logout } = useLogout();
 
+  const postsNavQuery = useQuery({
+    ...orpc.posts.list.queryOptions({ input: { limit: NAV_POSTS_LIMIT } }),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const postChildren: Array<NavChildOption> = useMemo(() => {
+    const items = postsNavQuery.data?.items ?? [];
+    return items.map((post) => ({
+      id: `post-${post.slug}`,
+      label: post.title,
+      href: `/posts/${post.slug}`,
+      external: false,
+    }));
+  }, [postsNavQuery.data]);
+
   const navOptions: Array<NavOption> = [
     { id: "home", label: m.nav_home(), href: "/", external: false },
-    { id: "posts", label: m.nav_posts(), href: "/posts", external: false },
+    {
+      id: "posts",
+      label: m.nav_posts(),
+      href: "/posts",
+      external: false,
+      children: postChildren,
+    },
     {
       id: "friend-links",
       label: m.nav_friend_links(),

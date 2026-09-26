@@ -143,7 +143,16 @@ export async function runImportTask(
       }
     }
 
-    await invalidate.all(context);
+    // 无论后面是否出错都要刷缓存，否则已导入的文章在前台看不到
+    await invalidate.all(context).catch((error) => {
+      console.error(
+        JSON.stringify({
+          message: "post-import cache invalidation failed",
+          taskId,
+          error: error instanceof Error ? error.message : String(error),
+        }),
+      );
+    });
 
     await env.R2.delete(r2Key).catch(() => undefined);
 
@@ -167,7 +176,11 @@ export async function runImportTask(
         error: error instanceof Error ? error.message : String(error),
       }),
     );
+
+    // 失败时也要刷一次缓存：循环里可能已经成功导入了一部分文章
+    await invalidate.all(context).catch(() => undefined);
     await env.R2.delete(r2Key).catch(() => undefined);
+
     await writeProgress(env, progressKey, failedProgress(
       error instanceof Error ? error.message : "IMPORT_FAILED",
     ));

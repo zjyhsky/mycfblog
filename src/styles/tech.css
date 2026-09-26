@@ -49,7 +49,7 @@
 }
 
 @layer components {
-  /* Ambient grid + glow behind the page. Dark mode only. */
+  /* Ambient grid + animated aurora behind the page. Dark mode only. */
   .tech-backdrop {
     position: fixed;
     inset: 0;
@@ -65,6 +65,22 @@
       transparent 100%
     );
   }
+  .tech-backdrop::before {
+    content: "";
+    position: absolute;
+    inset: -25%;
+    background:
+      radial-gradient(40% 32% at 18% 12%, var(--tech-glow), transparent 70%),
+      radial-gradient(38% 30% at 86% 6%, var(--tech-glow-2), transparent 70%),
+      radial-gradient(
+        46% 36% at 55% 100%,
+        color-mix(in srgb, var(--tech-glow) 75%, var(--tech-glow-2)),
+        transparent 72%
+      );
+    filter: blur(48px);
+    opacity: 0.9;
+    animation: tech-aurora 20s ease-in-out infinite;
+  }
   .tech-backdrop::after {
     content: "";
     position: absolute;
@@ -73,8 +89,84 @@
       radial-gradient(60% 40% at 12% 0%, var(--tech-glow), transparent 70%),
       radial-gradient(50% 35% at 88% 6%, var(--tech-glow-2), transparent 70%);
   }
-  html:not(.dark) .tech-backdrop {
+  /* Film-grain overlay for a premium matte finish. */
+  .tech-grain {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    opacity: 0.05;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size: 140px 140px;
+  }
+  @keyframes tech-aurora {
+    0% {
+      transform: translate3d(-8%, -6%, 0) scale(1);
+    }
+    50% {
+      transform: translate3d(10%, 5%, 0) scale(1.12);
+    }
+    100% {
+      transform: translate3d(-8%, -6%, 0) scale(1);
+    }
+  }
+  html:not(.dark) .tech-backdrop,
+  html:not(.dark) .tech-grain {
     display: none;
+  }
+
+  /* Gradient text used for brand / hero / headings. */
+  .tech-gradient-text {
+    background: linear-gradient(
+      100deg,
+      var(--tech-accent),
+      var(--tech-accent-2) 55%,
+      var(--tech-accent)
+    );
+    background-size: 220% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: tech-shimmer 7s linear infinite;
+  }
+  @keyframes tech-shimmer {
+    0% {
+      background-position: 0% 50%;
+    }
+    100% {
+      background-position: 220% 50%;
+    }
+  }
+
+  /* Neon hairline edge on the canonical card primitive (dark only). */
+  html.dark .fuwari-card-base {
+    position: relative;
+    isolation: isolate;
+  }
+  html.dark .fuwari-card-base::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--tech-accent) 65%, transparent),
+      transparent 42%,
+      color-mix(in srgb, var(--tech-accent-2) 65%, transparent)
+    );
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 0.45;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+  }
+  html.dark .fuwari-card-base:hover::before {
+    opacity: 0.9;
   }
 
   /* Glassy navigation bar in dark mode. */
@@ -114,6 +206,8 @@
     left: 0;
     z-index: 60;
     min-width: 15rem;
+    max-height: min(70vh, 32rem);
+    overflow-y: auto;
     padding: 0.375rem;
     display: flex;
     flex-direction: column;
@@ -122,6 +216,7 @@
     background: var(--fuwari-card-bg);
     border: 1px solid var(--fuwari-input-border);
     box-shadow: 0 18px 44px -14px rgb(0 0 0 / 0.6);
+    scrollbar-width: thin;
   }
   html.dark .nav-dropdown-panel {
     background: color-mix(in srgb, var(--fuwari-card-bg) 92%, transparent);
@@ -160,6 +255,62 @@
     border-bottom: 1px solid var(--fuwari-input-border);
     color: var(--fuwari-primary);
     font-size: 0.8125rem;
+  }
+
+  /* Glowing nav links + gradient brand wordmark. */
+  html.dark .public-brand span {
+    background: linear-gradient(
+      100deg,
+      var(--tech-accent),
+      var(--tech-accent-2) 60%
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    font-weight: 600;
+  }
+  html.dark .public-nav-link {
+    position: relative;
+    transition:
+      color 0.2s ease,
+      background-color 0.2s ease,
+      box-shadow 0.2s ease;
+  }
+  html.dark .public-nav-link:hover,
+  html.dark .public-nav-active {
+    color: var(--tech-accent);
+    background: color-mix(in srgb, var(--tech-accent) 12%, transparent);
+    box-shadow:
+      0 0 0 1px color-mix(in srgb, var(--tech-accent) 30%, transparent),
+      0 8px 22px -10px var(--tech-glow);
+  }
+
+  /* Gradient + glow for primary actions. */
+  html.dark .fuwari-btn-primary,
+  html.dark .console-submit,
+  html.dark .ad-consent-accept,
+  html.dark .btn-primary {
+    background: linear-gradient(
+      120deg,
+      var(--tech-accent),
+      var(--tech-accent-2)
+    );
+    background-size: 200% auto;
+    color: #fff;
+    border: 0;
+    box-shadow: 0 10px 26px -12px var(--tech-glow);
+    transition:
+      background-position 0.45s ease,
+      box-shadow 0.3s ease,
+      transform 0.15s ease;
+  }
+  html.dark .fuwari-btn-primary:hover,
+  html.dark .console-submit:hover,
+  html.dark .ad-consent-accept:hover,
+  html.dark .btn-primary:hover {
+    background-position: right center;
+    transform: translateY(-1px);
+    box-shadow: 0 16px 34px -12px var(--tech-glow-2);
   }
 
   /* Mobile menu groups */

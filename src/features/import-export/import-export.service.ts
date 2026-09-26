@@ -3,6 +3,7 @@ import {
   EXPORT_R2_PREFIX,
   IMPORT_EXPORT_KEYS,
   IMPORT_EXPORT_LIMITS,
+  IMPORT_R2_PREFIX,
   emptyTaskProgress,
   ExportManifestSchema,
   TaskStateSchema,
@@ -194,16 +195,39 @@ export async function getTaskSnapshot(
   }
 }
 
-/** 清理超过保留期的导出包（导出前、每日定时任务都会调用） */
+/**
+ * 清理超过保留期的导出包与残留的导入包。
+ *
+ * 导出包由每日定时任务和每次导出前各清一次。导入包在正常流程里会被删掉，
+ * 但如果队列消息因重试耗尽、Worker 异常等原因没被消费，就会永久留在 R2 里，
+ * 所以这里一并兜底清理。
+ */
 export async function purgeExpiredExports(env: Env): Promise<number> {
-  const listed = await env.R2.list({ prefix: EXPORT_R2_PREFIX, limit: 200 });
+  const prefixes = [EXPORT_R2_PREFIX, IMPORT_R2_PREFIX];
   const now = Date.now();
-  const expiredKeys = listed.objects
-    .filter((object) => now - object.uploaded.getTime() > IMPORT_EXPORT_LIMITS.exportTtlMs)
-    .map((object) => object.key);
+  const cutoff = IMPORT_EXPORT_LIMITS.exportTtlMs;
+  let removed = 0;
 
-  if (expiredKeys.length === 0) return 0;
+  for (const prefix of prefixes) {
+    // R2.list 最多一次返回 1000 个 key，用游标翻页取全
+    let cursor: string | undefined;
+    do {
+      const listed = await env.R2.list({ prefix, limit: 1000, cursor });
+      cursor = listed.truncated ? listed.cursor : undefined;
 
-  await env.R2.delete(expiredKeys);
-  return expiredKeys.length;
+      const expiredKeys = listed.objects
+        .filter((object) => now - object.uploaded.getTime() > cutoff)
+        .map((object) => object.key);
+
+      if (expiredKeys.length === 0) continue;
+
+      // delete 一次最多 1000 个 key，分批删
+      for (let offset = 0; offset < expiredKeys.length; offset += 1000) {
+        await env.R2.delete(expiredKeys.slice(offset, offset + 1000));
+      }
+      removed += expiredKeys.length;
+    } while (cursor);
+  }
+
+  return removed;
 }

@@ -50,6 +50,7 @@ export function PublicLayout({
   return (
     <div className="relative min-h-screen bg-(--fuwari-page-bg) transition-colors">
       <div className="tech-backdrop" aria-hidden="true" />
+      <div className="tech-grain" aria-hidden="true" />
 
       {/* Top row: Navbar - sticky */}
       <div className="sticky top-0 z-50 pointer-events-none">
