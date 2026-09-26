@@ -34,7 +34,7 @@ Flare Stack Blog 是一个深度拥抱 Cloudflare 生态的开源独立博客系
 
 ## 本仓库改造版 · 部署与使用
 
-> 本仓库基于上游 [du2333/flare-stack-blog](https://github.com/du2333/flare-stack-blog) v2.2.0 做了功能增强。**部署到 Cloudflare 的方式与上游完全一致**，仅新增了下列能力；基础部署/OAuth 细节仍以上游 `docs/deployment.md` 为准。
+> 本仓库基于上游 [du2333/flare-stack-blog](https://github.com/du2333/flare-stack-blog) v2.2.0 做了功能增强。部署到 Cloudflare **推荐走第三节的「网页端流程」**（Cloudflare Workers Builds，全程控制台点击，无需本地命令行）；仅新增了下列能力，基础 OAuth / Turnstile / Umami 等细节仍以上游 `docs/deployment.md` 为准。
 
 ### 一、相对上游新增的能力
 - **后台账号密码登录**：独立 `/console` 入口（用户名 + 口令），登录后直接进入 `/admin`。
@@ -52,13 +52,60 @@ Flare Stack Blog 是一个深度拥抱 Cloudflare 生态的开源独立博客系
 - ❌ **不要推送**：`node_modules/`、`.wrangler/`、`.output/`、`.vinxi/`、`dist/`、`wrangler.jsonc`（自动生成）、`.env` / `.dev.vars`（含密钥）、`*.local`、`.secrets`。
 - ⚠️ **依赖注意**：新增了 `fflate` / `gray-matter` / `marked` / `linkedom` 四个依赖（已写入 `package.json`）。请本地执行一次 `bun install` 重新生成 `bun.lock` 并一并提交，否则开启 `--frozen-lockfile` 的构建会失败。
 
-### 三、部署到 Cloudflare
-1. 把本仓库推到你的 GitHub（Fork 或新建仓库均可）。
-2. 本地 `bun install` → `bun run wrangler:prepare`，按 `.env.example` 填写 `WORKER_NAME` / `QUEUE_NAME` / `DOMAIN` / `D1_DATABASE_ID` / `KV_NAMESPACE_ID` / `BUCKET_NAME`。
-3. 在 Cloudflare 控制台创建资源并拿到 ID：**D1 数据库**、**R2 桶**、**KV 命名空间**、**Queue**；Durable Object（`RateLimiter` / `PostPublisher`）由迁移自动建立。
-4. 配置运行时机密（Cloudflare Builds 环境变量或 `wrangler secret put`）：`BETTER_AUTH_SECRET`、`BETTER_AUTH_URL`（完整 https 域名）、`GITHUB_CLIENT_ID` / `GITHUB_CLIENT_SECRET`。
-5. `bun run deploy`（或连接 Cloudflare Builds 自动部署）。每日 `15 0 * * *`（00:15）的 cron 用于热门度同步与过期备份清理。
-6. GitHub / Turnstile / Umami 等外部登录与统计的详细配置见上游 `docs/deployment.md`。
+### 三、网页端部署到 Cloudflare（全程控制台点击，无需本地命令行）
+
+整体思路：用 **Cloudflare Workers Builds**（关联 GitHub 后在云端自动构建并发布）。你只需要浏览器：在 Cloudflare 控制台创建资源、把仓库推到 GitHub、在控制台填写构建变量与密钥、点「部署」即可。`wrangler.jsonc` 会在云端由构建变量自动生成，**不用本地运行任何命令**。
+
+#### 步骤 1 · 在 Cloudflare 控制台创建 4 类资源并复制 ID
+依次在控制台创建，并记下对应的值（稍后填进「构建变量」）：
+
+- **D1 数据库**：侧边栏「Workers 与 Pages」→「D1 SQL 数据库」→「创建数据库」。记下 **数据库 ID**。
+- **R2 存储桶**：侧边栏「R2 对象存储」→「创建桶」。记下 **桶名称**。
+- **KV 命名空间**：侧边栏「Workers 与 Pages」→「KV」→「创建命名空间」。记下 **命名空间 ID**。
+- **Queue 队列**：侧边栏「Workers 与 Pages」→「队列」→「创建队列」。记下 **队列名称**。
+- （Durable Object `RateLimiter` / `PostPublisher` **不用**手动建，部署时由配置自动建立。）
+
+#### 步骤 2 · 把仓库推到 GitHub（网页端即可）
+在 GitHub 网页端 Fork 本仓库，或新建仓库后上传代码。需包含 `src/` `public/` `migrations/` `docs/` `scripts/` `package.json` `bun.lock` 等；**不要**上传 `wrangler.jsonc`、`.env`、`.wrangler/`（它们已被 `.gitignore` 忽略，由云端生成）。
+
+#### 步骤 3 · 在 Cloudflare 控制台创建并连接 Worker（Deploy from Git）
+1. 侧边栏「Workers 与 Pages」→「创建」→ 选 **Worker** → 点击「**通过 Git 部署 / Deploy from Git**」。
+2. 授权 GitHub 并选择你的仓库与分支（如 `main`）。
+3. 进入构建配置，逐项填写：
+   - **Worker 名称**：如 `my-blog`。
+   - **构建命令（Build command）**填入下面这一整行（云端会：装依赖 → 用你填的资源 ID 生成 `wrangler.jsonc` → 构建前端/SSR → 对线上 D1 执行 22 个迁移文件建表）：
+     ```
+     bun install && bun run wrangler:prepare && bun run build && bun db:migrate
+     ```
+   - **部署命令（Deploy command）**：填 `wrangler deploy`（默认即此，可显式写出）。
+   - **环境变量 / 构建变量（Build variables，明文）**：逐项添加步骤 1 的 6 个值：
+     | 变量名 | 填什么 |
+     | :--- | :--- |
+     | `WORKER_NAME` | 与上面 Worker 名称一致 |
+     | `QUEUE_NAME` | 步骤 1 的队列名称 |
+     | `DOMAIN` | 要绑定的域名（**必须是你 Cloudflare 账户下已托管 zone 的域名**，如 `blog.example.com`） |
+     | `D1_DATABASE_ID` | D1 数据库 ID |
+     | `KV_NAMESPACE_ID` | KV 命名空间 ID |
+     | `BUCKET_NAME` | R2 桶名称 |
+   - **密钥（Variables and Secrets，加密，类型选 secret）**：逐项添加（值不回显）：
+     | 变量名 | 填什么 |
+     | :--- | :--- |
+     | `BETTER_AUTH_SECRET` | 一段随机长字符串（任意密码生成器生成） |
+     | `BETTER_AUTH_URL` | 完整 https 地址，如 `https://blog.example.com` |
+     | `GITHUB_CLIENT_ID` | GitHub OAuth App 的 Client ID（回调填 `https://你的域名/api/auth/callback/github`）；暂不用 GitHub 登录可留空 |
+     | `GITHUB_CLIENT_SECRET` | 对应 Secret；同上可留空 |
+   - （可选）构建期注入前端变量（明文 Build variables）：`VITE_TURNSTILE_SITE_KEY`、`VITE_UMAMI_WEBSITE_ID`。
+4. 点击「保存并部署 / Deploy」。控制台会拉取代码、按上面命令构建并发布。首次部署会依据 `DOMAIN` 自动在你的 zone 下添加**自定义域**并申请 SSL 证书（可能需在「设置 → 自定义域」里确认一次证书状态）。
+
+#### 步骤 4 ·（可选）确认 D1 表已建立
+- 若构建日志里 `bun db:migrate` 已成功执行，可跳过。
+- 若想手动核对或补做：控制台「D1」→ 你的数据库 →「控制台（SQL 编辑器）」，把仓库 `migrations/` 下 `0000_*.sql` … `0021_*.sql` 的内容依次粘贴执行即可建表（也可在「终端(Terminal)」标签里逐文件运行）。
+
+#### 步骤 5 · 访问与初始化后台
+- 浏览器打开你的域名 → 进入 `/console`，用「用户名 + 口令」登录 → 进入 `/admin`。
+- 首次使用先在「设置 → 安全」创建管理员账号；再到「设置 → 站点 / 广告 / 维护」按需配置（见第四节）。
+- 每日 `15 0 * * *`（00:15）的 cron 由部署配置自动注册，用于热门度同步与过期备份清理，无需额外设置。
+- GitHub / Turnstile / Umami 等外部登录与统计的详细配置见上游 `docs/deployment.md`。
 
 ### 四、后台与功能使用
 - 访问 `/console` 用「用户名 + 口令」登录 → 进入 `/admin`。首次使用先在「设置 → 安全」创建管理员账号。
