@@ -38,6 +38,36 @@ export function Footer(_: FooterProps) {
             Sitemap
           </a>
           <br />
+          <span className="fuwari-expand-animation mt-2 flex flex-wrap items-center justify-center gap-x-2 gap-y-1">
+            <a
+              href="/about"
+              className="rounded-md px-1 -m-1 font-medium hover:text-(--fuwari-primary) text-(--fuwari-primary)"
+            >
+              {m.nav_about()}
+            </a>
+            <span className="fuwari-text-30">·</span>
+            <a
+              href="/contact"
+              className="rounded-md px-1 -m-1 font-medium hover:text-(--fuwari-primary) text-(--fuwari-primary)"
+            >
+              {m.nav_contact()}
+            </a>
+            <span className="fuwari-text-30">·</span>
+            <a
+              href="/privacy"
+              className="rounded-md px-1 -m-1 font-medium hover:text-(--fuwari-primary) text-(--fuwari-primary)"
+            >
+              {m.nav_privacy()}
+            </a>
+            <span className="fuwari-text-30">·</span>
+            <a
+              href="/disclaimer"
+              className="rounded-md px-1 -m-1 font-medium hover:text-(--fuwari-primary) text-(--fuwari-primary)"
+            >
+              {m.nav_disclaimer()}
+            </a>
+          </span>
+          <br />
           {m.footer_powered_by()}{" "}
           <a
             href="https://tanstack.com/start"

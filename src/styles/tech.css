@@ -58,36 +58,72 @@
     background-image:
       linear-gradient(var(--tech-grid) 1px, transparent 1px),
       linear-gradient(90deg, var(--tech-grid) 1px, transparent 1px);
-    background-size: 44px 44px;
+    background-size: 46px 46px;
     mask-image: radial-gradient(
-      ellipse 85% 65% at 50% 0%,
-      #000 35%,
+      ellipse 88% 70% at 50% -8%,
+      #000 30%,
       transparent 100%
     );
   }
   .tech-backdrop::before {
     content: "";
     position: absolute;
-    inset: -25%;
+    inset: -30%;
     background:
-      radial-gradient(40% 32% at 18% 12%, var(--tech-glow), transparent 70%),
-      radial-gradient(38% 30% at 86% 6%, var(--tech-glow-2), transparent 70%),
+      radial-gradient(42% 34% at 16% 10%, var(--tech-glow), transparent 70%),
+      radial-gradient(40% 32% at 84% 4%, var(--tech-glow-2), transparent 70%),
       radial-gradient(
-        46% 36% at 55% 100%,
-        color-mix(in srgb, var(--tech-glow) 75%, var(--tech-glow-2)),
+        52% 40% at 50% 108%,
+        color-mix(in srgb, var(--tech-glow) 80%, var(--tech-glow-2)),
+        transparent 72%
+      ),
+      radial-gradient(
+        30% 26% at 70% 60%,
+        color-mix(in srgb, var(--tech-glow-2) 70%, transparent),
         transparent 72%
       );
-    filter: blur(48px);
-    opacity: 0.9;
-    animation: tech-aurora 20s ease-in-out infinite;
+    filter: blur(60px);
+    opacity: 0.95;
+    animation: tech-aurora 26s ease-in-out infinite;
   }
   .tech-backdrop::after {
     content: "";
     position: absolute;
     inset: 0;
     background:
-      radial-gradient(60% 40% at 12% 0%, var(--tech-glow), transparent 70%),
-      radial-gradient(50% 35% at 88% 6%, var(--tech-glow-2), transparent 70%);
+      radial-gradient(62% 42% at 10% -4%, var(--tech-glow), transparent 70%),
+      radial-gradient(54% 38% at 90% 2%, var(--tech-glow-2), transparent 70%);
+    opacity: 0.6;
+    animation: tech-aurora-2 32s ease-in-out infinite;
+  }
+  /* Twinkling starfield for depth. */
+  .tech-stars {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    opacity: 0.5;
+    background-image:
+      radial-gradient(1.4px 1.4px at 20% 30%, rgba(200, 225, 255, 0.9), transparent 60%),
+      radial-gradient(1.2px 1.2px at 70% 20%, rgba(180, 210, 255, 0.8), transparent 60%),
+      radial-gradient(1.6px 1.6px at 40% 70%, rgba(210, 230, 255, 0.7), transparent 60%),
+      radial-gradient(1.1px 1.1px at 85% 65%, rgba(190, 220, 255, 0.8), transparent 60%),
+      radial-gradient(1.3px 1.3px at 55% 45%, rgba(200, 225, 255, 0.7), transparent 60%);
+    background-repeat: repeat;
+    background-size: 320px 320px;
+    animation: tech-twinkle 6s ease-in-out infinite alternate;
+  }
+  /* Soft edge vignette to focus the centre. */
+  .tech-vignette {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background: radial-gradient(
+      ellipse 120% 100% at 50% 30%,
+      transparent 55%,
+      rgba(0, 0, 0, 0.45) 100%
+    );
   }
   /* Film-grain overlay for a premium matte finish. */
   .tech-grain {
@@ -105,14 +141,35 @@
       transform: translate3d(-8%, -6%, 0) scale(1);
     }
     50% {
-      transform: translate3d(10%, 5%, 0) scale(1.12);
+      transform: translate3d(10%, 6%, 0) scale(1.14);
     }
     100% {
       transform: translate3d(-8%, -6%, 0) scale(1);
     }
   }
+  @keyframes tech-aurora-2 {
+    0% {
+      transform: translate3d(6%, 4%, 0) scale(1.05);
+    }
+    50% {
+      transform: translate3d(-6%, -3%, 0) scale(1);
+    }
+    100% {
+      transform: translate3d(6%, 4%, 0) scale(1.05);
+    }
+  }
+  @keyframes tech-twinkle {
+    0% {
+      opacity: 0.35;
+    }
+    100% {
+      opacity: 0.7;
+    }
+  }
   html:not(.dark) .tech-backdrop,
-  html:not(.dark) .tech-grain {
+  html:not(.dark) .tech-grain,
+  html:not(.dark) .tech-stars,
+  html:not(.dark) .tech-vignette {
     display: none;
   }
 
@@ -546,4 +603,81 @@
   html.dark .settings-card {
     border-color: var(--tech-border);
   }
+}
+
+/* --- Static content pages (privacy / about / contact / disclaimer) --- */
+.static-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  padding: 1.5rem;
+  border-radius: var(--fuwari-radius-large, 1rem);
+}
+@media (min-width: 768px) {
+  .static-page {
+    padding: 2rem 2.25rem;
+  }
+}
+.static-page-head {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid
+    var(--fuwari-input-border, rgba(150, 190, 255, 0.14));
+}
+.static-page-head h1 {
+  font-size: 1.6rem;
+  line-height: 1.2;
+  font-weight: 700;
+}
+@media (min-width: 768px) {
+  .static-page-head h1 {
+    font-size: 2rem;
+  }
+}
+.static-page-lead {
+  color: var(--fuwari-fg-75, rgba(232, 240, 255, 0.75));
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+.static-page-updated {
+  font-size: 0.75rem;
+  color: var(--fuwari-fg-50, rgba(232, 240, 255, 0.5));
+}
+.prose-tech {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+  color: var(--fuwari-fg, rgb(232 240 255 / 0.92));
+  font-size: 0.95rem;
+  line-height: 1.75;
+}
+.prose-tech p {
+  margin: 0;
+}
+.prose-tech .static-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+.prose-tech h2 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--fuwari-fg, rgb(232 240 255 / 0.92));
+  padding-left: 0.6rem;
+  border-left: 3px solid;
+  border-image: linear-gradient(var(--tech-accent, #38bdf8), var(--tech-accent-2, #a855f7))
+    1;
+}
+.static-inline-link {
+  display: inline-block;
+  margin-top: 0.35rem;
+  font-weight: 600;
+  color: var(--fuwari-primary, #38bdf8);
+  text-decoration: none;
+  word-break: break-all;
+}
+.static-inline-link:hover {
+  text-decoration: underline;
 }

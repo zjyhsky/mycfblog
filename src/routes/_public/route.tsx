@@ -80,6 +80,30 @@ function PublicLayout() {
       href: "/friend-links",
       external: false,
     },
+    {
+      id: "about",
+      label: m.nav_about(),
+      href: "/about",
+      external: false,
+    },
+    {
+      id: "contact",
+      label: m.nav_contact(),
+      href: "/contact",
+      external: false,
+    },
+    {
+      id: "privacy",
+      label: m.nav_privacy(),
+      href: "/privacy",
+      external: false,
+    },
+    {
+      id: "disclaimer",
+      label: m.nav_disclaimer(),
+      href: "/disclaimer",
+      external: false,
+    },
     ...siteConfig.navLinks.map((link, index) => ({
       id: `custom-${index}`,
       label: link.label,
