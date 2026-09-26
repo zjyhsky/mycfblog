@@ -38,10 +38,7 @@
   "posts_all": "全部",
   "posts_count": [
     {
-      "declarations": [
-        "input count",
-        "local formattedCountZh = count: number"
-      ],
+      "declarations": ["input count", "local formattedCountZh = count: number"],
       "match": {
         "count=*": "{formattedCountZh} 篇文章"
       }
@@ -49,10 +46,7 @@
   ],
   "format_month_day": [
     {
-      "declarations": [
-        "input date",
-        "local formattedDateZh = date: datetime month=2-digit day=2-digit"
-      ],
+      "declarations": ["input date", "local formattedDateZh = date: datetime month=2-digit day=2-digit"],
       "match": {
         "date=*": "{formattedDateZh}"
       }
@@ -85,10 +79,7 @@
   "post_back_to_top": "返回顶部",
   "post_word_count": [
     {
-      "declarations": [
-        "input count",
-        "local formattedCountZh = count: number"
-      ],
+      "declarations": ["input count", "local formattedCountZh = count: number"],
       "match": {
         "count=*": "约 {formattedCountZh} 字"
       }
@@ -100,10 +91,7 @@
   "post_uncategorized": "未分类",
   "read_time": [
     {
-      "declarations": [
-        "input count",
-        "local formattedCountZh = count: number"
-      ],
+      "declarations": ["input count", "local formattedCountZh = count: number"],
       "match": {
         "count=*": "{formattedCountZh} 分钟"
       }
@@ -111,10 +99,7 @@
   ],
   "post_views_count": [
     {
-      "declarations": [
-        "input count",
-        "local formattedCountZh = count: number"
-      ],
+      "declarations": ["input count", "local formattedCountZh = count: number"],
       "match": {
         "count=*": "{formattedCountZh} 次浏览"
       }
@@ -122,10 +107,7 @@
   ],
   "format_date": [
     {
-      "declarations": [
-        "input date",
-        "local formattedDateZh = date: datetime year=numeric month=long day=numeric"
-      ],
+      "declarations": ["input date", "local formattedDateZh = date: datetime year=numeric month=long day=numeric"],
       "match": {
         "date=*": "{formattedDateZh}"
       }
@@ -133,10 +115,7 @@
   ],
   "format_datetime": [
     {
-      "declarations": [
-        "input date",
-        "local formattedDateZh = date: datetime year=numeric month=long day=numeric hour=2-digit minute=2-digit hour12=false"
-      ],
+      "declarations": ["input date", "local formattedDateZh = date: datetime year=numeric month=long day=numeric hour=2-digit minute=2-digit hour12=false"],
       "match": {
         "date=*": "{formattedDateZh}"
       }
@@ -145,10 +124,7 @@
   "time_ago_just_now": "刚刚",
   "time_ago_minutes": [
     {
-      "declarations": [
-        "input count",
-        "local formattedCountZh = count: number"
-      ],
+      "declarations": ["input count", "local formattedCountZh = count: number"],
       "match": {
         "count=*": "{formattedCountZh} 分钟前"
       }
@@ -156,10 +132,7 @@
   ],
   "time_ago_hours": [
     {
-      "declarations": [
-        "input count",
-        "local formattedCountZh = count: number"
-      ],
+      "declarations": ["input count", "local formattedCountZh = count: number"],
       "match": {
         "count=*": "{formattedCountZh} 小时前"
       }
@@ -167,10 +140,7 @@
   ],
   "time_ago_days": [
     {
-      "declarations": [
-        "input count",
-        "local formattedCountZh = count: number"
-      ],
+      "declarations": ["input count", "local formattedCountZh = count: number"],
       "match": {
         "count=*": "{formattedCountZh} 天前"
       }
@@ -183,9 +153,7 @@
   "search_no_results": "未找到相关文章",
   "search_no_results_with_query": [
     {
-      "declarations": [
-        "input query"
-      ],
+      "declarations": ["input query"],
       "match": {
         "query=*": "没有找到与 \"{query}\" 相关的文章，换个关键词试试吧。"
       }
@@ -228,9 +196,7 @@
   "friend_link_validation_required": "站点名称不能为空",
   "friend_link_validation_too_long": [
     {
-      "declarations": [
-        "input max"
-      ],
+      "declarations": ["input max"],
       "match": {
         "max=*": "最长{max}字"
       }
@@ -287,9 +253,7 @@
   "profile_toast_profile_updated": "个人资料已更新",
   "profile_toast_name_changed": [
     {
-      "declarations": [
-        "input name"
-      ],
+      "declarations": ["input name"],
       "match": {
         "name=*": "昵称已更新为：{name}"
       }
@@ -348,9 +312,7 @@
   "request_error_rate_limited_title": "请求过于频繁",
   "request_error_rate_limited_desc": [
     {
-      "declarations": [
-        "input seconds"
-      ],
+      "declarations": ["input seconds"],
       "match": {
         "seconds=*": "请在 {seconds} 秒后重试。"
       }
@@ -528,10 +490,7 @@
   "theme_toggle_title": "主题：{theme}",
   "format_time": [
     {
-      "declarations": [
-        "input date",
-        "local formattedTimeZh = date: datetime hour=2-digit minute=2-digit hour12=false"
-      ],
+      "declarations": ["input date", "local formattedTimeZh = date: datetime hour=2-digit minute=2-digit hour12=false"],
       "match": {
         "date=*": "{formattedTimeZh}"
       }
@@ -539,10 +498,7 @@
   ],
   "format_month_day_time": [
     {
-      "declarations": [
-        "input date",
-        "local formattedDateTimeZh = date: datetime month=2-digit day=2-digit hour=2-digit minute=2-digit hour12=false"
-      ],
+      "declarations": ["input date", "local formattedDateTimeZh = date: datetime month=2-digit day=2-digit hour=2-digit minute=2-digit hour12=false"],
       "match": {
         "date=*": "{formattedDateTimeZh}"
       }
@@ -634,11 +590,7 @@
   "admin_posts_time_modified": "修改",
   "admin_pagination_info": [
     {
-      "declarations": [
-        "input startItem",
-        "input endItem",
-        "input totalItems"
-      ],
+      "declarations": ["input startItem", "input endItem", "input totalItems"],
       "match": {
         "startItem=*": "第 {startItem} - {endItem} 条 / 共 {totalItems} 条"
       }
@@ -658,9 +610,7 @@
   "editor_status_unsaved": "未保存",
   "editor_status_saved": [
     {
-      "declarations": [
-        "input time"
-      ],
+      "declarations": ["input time"],
       "match": {
         "time=*": "已保存 {time}"
       }
@@ -755,9 +705,7 @@
   "editor_action_slug_set": "URL slug 已设置",
   "editor_action_slug_set_desc": [
     {
-      "declarations": [
-        "input slug"
-      ],
+      "declarations": ["input slug"],
       "match": {
         "slug=*": "URL slug 已设置为 \"{slug}\""
       }
@@ -770,10 +718,7 @@
   "editor_action_read_time_done": "阅读时间计算完成",
   "editor_action_read_time_desc": [
     {
-      "declarations": [
-        "input mins",
-        "input words"
-      ],
+      "declarations": ["input mins", "input words"],
       "match": {
         "mins=*, words=*": "预计阅读时间 {mins} 分钟 ({words} 字)"
       }
@@ -783,9 +728,7 @@
   "editor_action_tags_done": "AI 标签生成完成",
   "editor_action_tags_added": [
     {
-      "declarations": [
-        "input count"
-      ],
+      "declarations": ["input count"],
       "match": {
         "count=*": "已添加 {count} 个新标签"
       }
@@ -942,10 +885,7 @@
   "media_uploading": "正在上传 {current}/{total}",
   "media_stats_assets": [
     {
-      "declarations": [
-        "input count",
-        "input size"
-      ],
+      "declarations": ["input count", "input size"],
       "match": {
         "count=*, size=*": "{count} 张 · {size}"
       }
@@ -955,9 +895,7 @@
   "media_delete_confirm_title": "删除图片",
   "media_delete_confirm_desc": [
     {
-      "declarations": [
-        "input count"
-      ],
+      "declarations": ["input count"],
       "match": {
         "count=*": "确定删除这 {count} 张图片吗"
       }
@@ -968,9 +906,7 @@
   "media_select_all": "全选",
   "media_delete_selected": [
     {
-      "declarations": [
-        "input count"
-      ],
+      "declarations": ["input count"],
       "match": {
         "count=*": "删除选中 ({count})"
       }
@@ -988,9 +924,7 @@
   "media_upload_drop_here": "点击或拖拽文件至此",
   "media_upload_support_format": [
     {
-      "declarations": [
-        "input maxSizeMb"
-      ],
+      "declarations": ["input maxSizeMb"],
       "match": {
         "maxSizeMb=*": "支持 JPEG/JPG/PNG/WEBP/GIF (最大 {maxSizeMb}MB)"
       }
@@ -998,9 +932,7 @@
   ],
   "media_upload_queue": [
     {
-      "declarations": [
-        "input count"
-      ],
+      "declarations": ["input count"],
       "match": {
         "count=*": "上传队列 [{count}]"
       }
@@ -1029,9 +961,7 @@
   "media_preview_created": "创建时间",
   "media_preview_linked": [
     {
-      "declarations": [
-        "input count"
-      ],
+      "declarations": ["input count"],
       "match": {
         "count=*": "引用 ({count})"
       }
@@ -1045,9 +975,7 @@
   "media_toast_partial_delete": "部分删除成功",
   "media_toast_partial_delete_desc": [
     {
-      "declarations": [
-        "input count"
-      ],
+      "declarations": ["input count"],
       "match": {
         "count=*": "已删除 {count} 个项目，部分资源正在被文章使用，无法删除。"
       }
@@ -1058,9 +986,7 @@
   "media_toast_delete_success": "资源已永久删除",
   "media_toast_delete_success_desc": [
     {
-      "declarations": [
-        "input count"
-      ],
+      "declarations": ["input count"],
       "match": {
         "count=*": "{count} 个项目已从存储中永久删除。"
       }
@@ -1071,9 +997,7 @@
   "media_toast_protected_delete": "无法删除受保护的资源",
   "media_toast_protected_delete_desc": [
     {
-      "declarations": [
-        "input count"
-      ],
+      "declarations": ["input count"],
       "match": {
         "count=*": "{count} 个项目正在被文章使用。请先取消选择这些项目。"
       }
@@ -1088,9 +1012,7 @@
   "media_validation_key_required": "图片标识不能为空",
   "media_upload_fail": [
     {
-      "declarations": [
-        "input name"
-      ],
+      "declarations": ["input name"],
       "match": {
         "name=*": "上传失败: {name}"
       }
@@ -1098,9 +1020,7 @@
   ],
   "media_upload_log_error": [
     {
-      "declarations": [
-        "input message"
-      ],
+      "declarations": ["input message"],
       "match": {
         "message=*": "> ERROR: {message}"
       }
@@ -1118,10 +1038,7 @@
   "comments_admin_user_risk_clear": "良好 / 无违规",
   "comments_admin_user_risk_flagged": [
     {
-      "declarations": [
-        "input count",
-        "local formattedCountZh = count: number"
-      ],
+      "declarations": ["input count", "local formattedCountZh = count: number"],
       "match": {
         "count=*": "{formattedCountZh} 次违规记录"
       }
@@ -1296,7 +1213,7 @@
   "settings_icons": "网站图标与应用图标",
   "settings_icons_hint": "用于浏览器标签页、移动端主屏幕及 PWA 应用的多尺寸图标。建议至少上传 SVG 或 ICO 格式的标签页图标。",
   "settings_site_nav_title": "顶部导航菜单",
-  "settings_site_nav_hint": "自定义博客顶部的导航链接（如关于、归档、友链等），最多 6 个；每项还可添加最多 8 个子菜单，用来做「项目」这类下拉菜单。",
+  "settings_site_nav_hint": "自定义博客顶部的导航链接（如关于、归档、友链等），最多支持 5 个。",
   "settings_site_nav_name": "菜单名称",
   "settings_site_nav_url": "跳转链接",
   "settings_site_nav_label_ph": "如：关于",
@@ -1363,9 +1280,7 @@
   "settings_site_primary_preview_btn_tinted": "染色背景",
   "settings_site_validation_too_long": [
     {
-      "declarations": [
-        "input max"
-      ],
+      "declarations": ["input max"],
       "match": {
         "max=*": "最长{max}字"
       }
@@ -1430,9 +1345,7 @@
   "settings_mcp_connections_desc": "这里展示已经完成 OAuth 授权的 AI 工具和应用。",
   "settings_mcp_connected_count": [
     {
-      "declarations": [
-        "input count"
-      ],
+      "declarations": ["input count"],
       "match": {
         "count=1": "1 个已连接客户端",
         "count=*": "{count} 个已连接客户端"
@@ -1506,11 +1419,7 @@
   "settings_webhook_toast_test_fail_msg": "测试请求发送失败: {message}",
   "settings_webhook_delivery_failed": [
     {
-      "declarations": [
-        "input status",
-        "input statusText",
-        "input detail"
-      ],
+      "declarations": ["input status", "input statusText", "input detail"],
       "match": {
         "detail=": "Webhook 投递失败: {status} {statusText}",
         "detail=*": "Webhook 投递失败: {status} {statusText} - {detail}"
