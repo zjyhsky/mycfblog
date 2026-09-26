@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { notificationEventSchema } from "@/features/notification/notification.schema";
-import { EMAIL_UNSUBSCRIBE_TYPES } from "@/lib/db/schema";
+import { EMAIL_UNSUBSCRIBE_TYPES, POST_STATUSES } from "@/lib/db/schema";
 
 const emailMessageSchema = z.object({
   type: z.literal("EMAIL"),
@@ -28,11 +28,31 @@ const webhookMessageSchema = z.object({
   }),
 });
 
+const importExportMessageSchema = z.object({
+  type: z.literal("IMPORT_EXPORT"),
+  data: z.discriminatedUnion("kind", [
+    z.object({
+      kind: z.literal("export"),
+      taskId: z.string(),
+      status: z.enum(POST_STATUSES).optional(),
+      includeMedia: z.boolean(),
+    }),
+    z.object({
+      kind: z.literal("import"),
+      taskId: z.string(),
+      mode: z.enum(["native", "markdown"]),
+      restoreComments: z.boolean(),
+    }),
+  ]),
+});
+
 export const queueMessageSchema = z.discriminatedUnion("type", [
   emailMessageSchema,
   webhookMessageSchema,
+  importExportMessageSchema,
 ]);
 
 export type QueueMessage = z.infer<typeof queueMessageSchema>;
 export type EmailMessage = z.infer<typeof emailMessageSchema>;
 export type WebhookMessage = z.infer<typeof webhookMessageSchema>;
+export type ImportExportMessage = z.infer<typeof importExportMessageSchema>;

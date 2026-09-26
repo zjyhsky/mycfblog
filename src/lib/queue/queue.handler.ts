@@ -1,4 +1,6 @@
 import { handleEmailMessage } from "@/features/email/api/email.consumer";
+import { runExportTask } from "@/features/import-export/workflows/export.task";
+import { runImportTask } from "@/features/import-export/workflows/import.task";
 import { handleWebhookMessage } from "@/features/webhook/api/webhook.consumer";
 import { queueMessageSchema } from "@/lib/queue/queue.schema";
 
@@ -38,6 +40,21 @@ export async function handleQueueBatch(
           break;
         case "WEBHOOK":
           await handleWebhookMessage({ env }, event.data, message.id);
+          break;
+        case "IMPORT_EXPORT":
+          if (event.data.kind === "export") {
+            await runExportTask(env, {
+              taskId: event.data.taskId,
+              status: event.data.status,
+              includeMedia: event.data.includeMedia,
+            });
+          } else {
+            await runImportTask(env, ctx, {
+              taskId: event.data.taskId,
+              mode: event.data.mode,
+              restoreComments: event.data.restoreComments,
+            });
+          }
           break;
         default:
           event satisfies never;

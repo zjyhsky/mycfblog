@@ -714,6 +714,47 @@
       }
     }
   },
+  "adminConsole": {
+    "status": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {
+          "method": "GET",
+          "path": "/admin/admin-console",
+          "summary": "Get administrator password sign-in status",
+          "description": "Returns whether the standalone /console username + password entry is enabled, plus the configured login name.",
+          "tags": ["Admin Console"]
+        }
+      }
+    },
+    "setCredentials": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {
+          "method": "POST",
+          "path": "/admin/admin-console",
+          "summary": "Create or reset the administrator password sign-in",
+          "description": "Creates the internal administrator account for /console, or replaces it when the login name already exists. Replacing invalidates all of its sessions. The password is never stored in the site configuration.",
+          "tags": ["Admin Console"]
+        }
+      }
+    },
+    "disable": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {
+          "method": "DELETE",
+          "path": "/admin/admin-console",
+          "summary": "Disable the administrator password sign-in",
+          "description": "Deletes the internal administrator account and turns off /console. Email and GitHub sign-in are unaffected.",
+          "tags": ["Admin Console"]
+        }
+      }
+    }
+  },
   "friendLinks": {
     "listApproved": {
       "~orpc": {
@@ -823,6 +864,58 @@
             "summary": "Delete a friend link",
             "tags": ["Admin Friend Links"]
           }
+        }
+      }
+    }
+  },
+  "importExport": {
+    "startExport": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {
+          "method": "POST",
+          "path": "/admin/import-export/export",
+          "summary": "Start a full-site backup export",
+          "description": "Packages posts, tags, categories, comments, friend links, site settings and media files into a ZIP that is stored in R2 for 24 hours.",
+          "tags": ["Admin Import Export"]
+        }
+      }
+    },
+    "exportProgress": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {
+          "method": "GET",
+          "path": "/admin/import-export/export/progress",
+          "summary": "Poll the backup export progress",
+          "tags": ["Admin Import Export"]
+        }
+      }
+    },
+    "startImport": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {
+          "method": "POST",
+          "path": "/admin/import-export/import",
+          "summary": "Upload a backup archive to restore",
+          "description": "Accepts a ZIP exported by this system, or a ZIP of Markdown files from Hugo / Hexo / Jekyll. Existing slugs are skipped, everything else is merged in.",
+          "tags": ["Admin Import Export"]
+        }
+      }
+    },
+    "importProgress": {
+      "~orpc": {
+        "errorMap": {},
+        "meta": {},
+        "route": {
+          "method": "GET",
+          "path": "/admin/import-export/import/progress",
+          "summary": "Poll the backup restore progress",
+          "tags": ["Admin Import Export"]
         }
       }
     }

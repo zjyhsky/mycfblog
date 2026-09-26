@@ -464,3 +464,75 @@ input.settings-input:disabled {
   color: var(--fuwari-danger-fg);
   background: var(--fuwari-danger-bg);
 }
+
+/* --- 备份与恢复：导入结果面板 --- */
+/* 面板是 .settings-maintenance 的直接子元素，这里覆盖行样式，改为整块卡片 */
+.settings-maintenance > div.settings-backup-report {
+  display: block;
+  align-items: stretch;
+  gap: 0;
+  max-width: 760px;
+  margin: 2px 0 18px;
+  padding: calc(18 * var(--settings-unit, 1px)) calc(20 * var(--settings-unit, 1px));
+  border: 1px solid var(--settings-rule);
+  border-radius: 12px;
+}
+.settings-backup-report-title {
+  color: var(--fuwari-fg-75);
+  font-size: calc(14 * var(--settings-unit, 1px));
+  font-weight: 600;
+}
+.settings-backup-report-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 18px;
+  margin-top: 10px;
+  color: var(--fuwari-fg-50);
+  font-size: calc(13 * var(--settings-unit, 1px));
+}
+.settings-backup-report-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 16px;
+  padding-left: 10px;
+  border-left: 2px solid var(--fuwari-primary);
+  color: var(--fuwari-fg-75);
+  font-size: calc(12 * var(--settings-unit, 1px));
+  font-weight: 650;
+}
+.settings-backup-report-group[data-tone="error"] {
+  border-left-color: var(--fuwari-danger-fg);
+  color: var(--fuwari-danger-fg);
+}
+.settings-backup-report-group[data-tone="warning"] {
+  border-left-color: var(--fuwari-warning-fg);
+  color: var(--fuwari-warning-fg);
+}
+.settings-backup-report-list {
+  display: grid;
+  gap: 5px;
+  margin-top: 8px;
+  padding-left: 12px;
+}
+.settings-backup-report-list li {
+  color: var(--fuwari-fg-50);
+  font-size: calc(12 * var(--settings-unit, 1px));
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+.settings-backup-report-slug {
+  margin-left: 6px;
+  opacity: 0.5;
+}
+.settings-backup-report-reason {
+  margin-left: 6px;
+  color: var(--fuwari-danger-fg);
+}
+.settings-backup-report-more {
+  font-style: italic;
+  opacity: 0.7;
+}
+.settings-backup-report p.settings-muted {
+  margin-top: 16px;
+}

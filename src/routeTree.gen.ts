@@ -56,6 +56,7 @@ import { Route as AdminSettingsSiteRouteImport } from './routes/admin/settings/s
 import { Route as AdminSettingsSecurityRouteImport } from './routes/admin/settings/security'
 import { Route as AdminTagsIndexRouteImport } from './routes/admin/tags/index'
 import { Route as ApiAuthSplatRouteImport } from './routes/api.auth.$'
+import { Route as ApiExportSplatRouteImport } from './routes/api.export.$'
 import { Route as AdminPostsEditIdRouteRouteImport } from './routes/admin/posts/edit.$id/route'
 import { Route as AdminPostsEditIdIndexRouteImport } from './routes/admin/posts/edit.$id/index'
 import { Route as AdminPostsEditIdHistoryRouteImport } from './routes/admin/posts/edit.$id/history'
@@ -297,6 +298,11 @@ const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   path: '/$',
   getParentRoute: () => ApiAuthRoute,
 } as any)
+const ApiExportSplatRoute = ApiExportSplatRouteImport.update({
+  id: '/api/export/$',
+  path: '/api/export/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminPostsEditIdRouteRoute = AdminPostsEditIdRouteRouteImport.update({
   id: '/edit/$id',
   path: '/edit/$id',
@@ -358,6 +364,7 @@ export interface FileRoutesByFullPath {
   '/admin/settings/site': typeof AdminSettingsSiteRoute
   '/admin/settings/security': typeof AdminSettingsSecurityRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/export/$': typeof ApiExportSplatRoute
   '/admin/friend-links/': typeof AdminFriendLinksIndexRoute
   '/admin/media/': typeof AdminMediaIndexRoute
   '/admin/muted-users/': typeof AdminMutedUsersIndexRoute
@@ -405,6 +412,7 @@ export interface FileRoutesByTo {
   '/admin/settings/site': typeof AdminSettingsSiteRoute
   '/admin/settings/security': typeof AdminSettingsSecurityRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/export/$': typeof ApiExportSplatRoute
   '/admin/friend-links': typeof AdminFriendLinksIndexRoute
   '/admin/media': typeof AdminMediaIndexRoute
   '/admin/muted-users': typeof AdminMutedUsersIndexRoute
@@ -458,6 +466,7 @@ export interface FileRoutesById {
   '/admin/settings/site': typeof AdminSettingsSiteRoute
   '/admin/settings/security': typeof AdminSettingsSecurityRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/export/$': typeof ApiExportSplatRoute
   '/admin/friend-links/': typeof AdminFriendLinksIndexRoute
   '/admin/media/': typeof AdminMediaIndexRoute
   '/admin/muted-users/': typeof AdminMutedUsersIndexRoute
@@ -510,6 +519,7 @@ export interface FileRouteTypes {
     | '/admin/settings/site'
     | '/admin/settings/security'
     | '/api/auth/$'
+    | '/api/export/$'
     | '/admin/friend-links/'
     | '/admin/media/'
     | '/admin/muted-users/'
@@ -557,6 +567,7 @@ export interface FileRouteTypes {
     | '/admin/settings/site'
     | '/admin/settings/security'
     | '/api/auth/$'
+    | '/api/export/$'
     | '/admin/friend-links'
     | '/admin/media'
     | '/admin/muted-users'
@@ -609,6 +620,7 @@ export interface FileRouteTypes {
     | '/admin/settings/site'
     | '/admin/settings/security'
     | '/api/auth/$'
+    | '/api/export/$'
     | '/admin/friend-links/'
     | '/admin/media/'
     | '/admin/muted-users/'
@@ -636,6 +648,7 @@ export interface RootRouteChildren {
   ApiSplatRoute: typeof ApiSplatRoute
   ApiAuthRoute: typeof ApiAuthRouteWithChildren
   ApiSendRoute: typeof ApiSendRoute
+  ApiExportSplatRoute: typeof ApiExportSplatRoute
   ImagesSplatRoute: typeof ImagesSplatRoute
 }
 
@@ -970,6 +983,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAuthSplatRouteImport
       parentRoute: typeof ApiAuthRoute
     }
+    '/api/export/$': {
+      id: '/api/export/$'
+      path: '/api/export/$'
+      fullPath: '/api/export/$'
+      preLoaderRoute: typeof ApiExportSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/posts/edit/$id': {
       id: '/admin/posts/edit/$id'
       path: '/edit/$id'
@@ -1168,6 +1188,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiSplatRoute: ApiSplatRoute,
   ApiAuthRoute: ApiAuthRouteWithChildren,
   ApiSendRoute: ApiSendRoute,
+  ApiExportSplatRoute: ApiExportSplatRoute,
   ImagesSplatRoute: ImagesSplatRoute,
 }
 export const routeTree = rootRouteImport

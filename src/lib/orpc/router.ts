@@ -11,6 +11,7 @@ import configRouter from "@/features/config/server/router";
 import dashboardRouter from "@/features/dashboard/server/router";
 import emailRouter from "@/features/email/server/router";
 import friendLinksRouter from "@/features/friend-links/server/router";
+import importExportRouter from "@/features/import-export/server/router";
 import mediaRouter from "@/features/media/server/router";
 import mutedUsersRouter from "@/features/muted-users/server/router";
 import postPopularityRouter from "@/features/post-popularity/server/router";
@@ -30,6 +31,7 @@ export const router = {
   config: configRouter,
   adminConsole: adminConsoleRouter,
   friendLinks: friendLinksRouter,
+  importExport: importExportRouter,
   email: emailRouter,
   search: searchRouter,
   postPopularity: postPopularityRouter,

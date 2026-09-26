@@ -6,6 +6,7 @@ import {
   workersCacheKey,
   type WorkersCachePurgeTarget,
 } from "@/features/cache/workers-cache-policy";
+import { purgeExpiredExports } from "@/features/import-export/import-export.service";
 import { postPopularityService } from "@/features/post-popularity/service/post-popularity.service";
 import { getDb } from "@/lib/db";
 import { handleQueueBatch } from "@/lib/queue/queue.handler";
@@ -60,6 +61,16 @@ export default {
     await handleQueueBatch(batch, env, ctx);
   },
   async scheduled(_controller, env, ctx) {
+    // 清理超过保留期的备份包（R2 里的 exports/ 前缀）
+    await purgeExpiredExports(env).catch((error) => {
+      console.error(
+        JSON.stringify({
+          message: "expired export cleanup failed",
+          error: error instanceof Error ? error.message : String(error),
+        }),
+      );
+    });
+
     const result = await postPopularityService.sync({
       env,
       db: getDb(env),

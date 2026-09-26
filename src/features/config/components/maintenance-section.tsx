@@ -1,5 +1,6 @@
 import { m } from "@/paraglide/messages";
 import { CacheMaintenance } from "@/features/cache/components/cache-maintenance";
+import { BackupRestoreSection } from "@/features/import-export/components/backup-restore-section";
 import { PostPopularityMaintenance } from "@/features/post-popularity/components/post-popularity-maintenance";
 import { SearchMaintenance } from "@/features/search/components/search-maintenance";
 import { VersionMaintenance } from "@/features/version/components/version-maintenance";
@@ -19,6 +20,7 @@ export function MaintenanceSection() {
       <PostPopularityMaintenance />
       <SearchMaintenance />
       <CacheMaintenance />
+      <BackupRestoreSection />
       <p className="settings-muted">{m.settings_design_immediate()}</p>
     </div>
   );
