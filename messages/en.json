@@ -1304,7 +1304,7 @@
   "settings_icons": "Site & App Icons",
   "settings_icons_hint": "Multi-size icons for browser tabs, mobile home screens, and PWA shortcuts. Uploading an SVG or ICO favicon is recommended at minimum.",
   "settings_site_nav_title": "Top Navigation Menu",
-  "settings_site_nav_hint": "Custom links displayed at the top of your blog (e.g. About, Archives, Friends), up to 5 items.",
+  "settings_site_nav_hint": "Custom links at the top of your blog (e.g. About, Archives, Friends), up to 6 items. Each item can hold up to 8 sub-menu entries for dropdown menus such as Projects.",
   "settings_site_nav_name": "Label",
   "settings_site_nav_url": "Target URL",
   "settings_site_nav_label_ph": "e.g. About",

@@ -1296,7 +1296,7 @@
   "settings_icons": "网站图标与应用图标",
   "settings_icons_hint": "用于浏览器标签页、移动端主屏幕及 PWA 应用的多尺寸图标。建议至少上传 SVG 或 ICO 格式的标签页图标。",
   "settings_site_nav_title": "顶部导航菜单",
-  "settings_site_nav_hint": "自定义博客顶部的导航链接（如关于、归档、友链等），最多支持 5 个。",
+  "settings_site_nav_hint": "自定义博客顶部的导航链接（如关于、归档、友链等），最多 6 个；每项还可添加最多 8 个子菜单，用来做「项目」这类下拉菜单。",
   "settings_site_nav_name": "菜单名称",
   "settings_site_nav_url": "跳转链接",
   "settings_site_nav_label_ph": "如：关于",
