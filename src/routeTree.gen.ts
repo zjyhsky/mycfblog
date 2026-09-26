@@ -11,7 +11,9 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as PublicRouteRouteImport } from './routes/_public/route'
 import { Route as AdminRouteRouteImport } from './routes/admin/route'
+import { Route as AdsDottxtRouteImport } from './routes/ads[.]txt'
 import { Route as AtomDotxmlRouteImport } from './routes/atom[.]xml'
+import { Route as ConsoleRouteImport } from './routes/console'
 import { Route as FeedDotjsonRouteImport } from './routes/feed[.]json'
 import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
 import { Route as RssDotxmlRouteImport } from './routes/rss[.]xml'
@@ -51,6 +53,7 @@ import { Route as AdminSettingsApiKeysRouteImport } from './routes/admin/setting
 import { Route as AdminSettingsMaintenanceRouteImport } from './routes/admin/settings/maintenance'
 import { Route as AdminSettingsNotificationsRouteImport } from './routes/admin/settings/notifications'
 import { Route as AdminSettingsSiteRouteImport } from './routes/admin/settings/site'
+import { Route as AdminSettingsSecurityRouteImport } from './routes/admin/settings/security'
 import { Route as AdminTagsIndexRouteImport } from './routes/admin/tags/index'
 import { Route as ApiAuthSplatRouteImport } from './routes/api.auth.$'
 import { Route as AdminPostsEditIdRouteRouteImport } from './routes/admin/posts/edit.$id/route'
@@ -67,9 +70,19 @@ const AdminRouteRoute = AdminRouteRouteImport.update({
   path: '/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdsDottxtRoute = AdsDottxtRouteImport.update({
+  id: '/ads.txt',
+  path: '/ads.txt',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AtomDotxmlRoute = AtomDotxmlRouteImport.update({
   id: '/atom.xml',
   path: '/atom.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ConsoleRoute = ConsoleRouteImport.update({
+  id: '/console',
+  path: '/console',
   getParentRoute: () => rootRouteImport,
 } as any)
 const FeedDotjsonRoute = FeedDotjsonRouteImport.update({
@@ -269,6 +282,11 @@ const AdminSettingsSiteRoute = AdminSettingsSiteRouteImport.update({
   path: '/site',
   getParentRoute: () => AdminSettingsRouteRoute,
 } as any)
+const AdminSettingsSecurityRoute = AdminSettingsSecurityRouteImport.update({
+  id: '/security',
+  path: '/security',
+  getParentRoute: () => AdminSettingsRouteRoute,
+} as any)
 const AdminTagsIndexRoute = AdminTagsIndexRouteImport.update({
   id: '/tags/',
   path: '/tags/',
@@ -311,6 +329,8 @@ export interface FileRoutesByFullPath {
   '/site.webmanifest': typeof SiteDotwebmanifestRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/stats.js': typeof StatsDotjsRoute
+  '/ads.txt': typeof AdsDottxtRoute
+  '/console': typeof ConsoleRoute
   '/admin/posts': typeof AdminPostsRouteRouteWithChildren
   '/admin/settings': typeof AdminSettingsRouteRouteWithChildren
   '/$': typeof PublicSplatRoute
@@ -336,6 +356,7 @@ export interface FileRoutesByFullPath {
   '/admin/settings/maintenance': typeof AdminSettingsMaintenanceRoute
   '/admin/settings/notifications': typeof AdminSettingsNotificationsRoute
   '/admin/settings/site': typeof AdminSettingsSiteRoute
+  '/admin/settings/security': typeof AdminSettingsSecurityRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/admin/friend-links/': typeof AdminFriendLinksIndexRoute
   '/admin/media/': typeof AdminMediaIndexRoute
@@ -356,6 +377,8 @@ export interface FileRoutesByTo {
   '/site.webmanifest': typeof SiteDotwebmanifestRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/stats.js': typeof StatsDotjsRoute
+  '/ads.txt': typeof AdsDottxtRoute
+  '/console': typeof ConsoleRoute
   '/': typeof PublicIndexRoute
   '/$': typeof PublicSplatRoute
   '/friend-links': typeof PublicFriendLinksRoute
@@ -380,6 +403,7 @@ export interface FileRoutesByTo {
   '/admin/settings/maintenance': typeof AdminSettingsMaintenanceRoute
   '/admin/settings/notifications': typeof AdminSettingsNotificationsRoute
   '/admin/settings/site': typeof AdminSettingsSiteRoute
+  '/admin/settings/security': typeof AdminSettingsSecurityRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/admin/friend-links': typeof AdminFriendLinksIndexRoute
   '/admin/media': typeof AdminMediaIndexRoute
@@ -402,6 +426,8 @@ export interface FileRoutesById {
   '/site.webmanifest': typeof SiteDotwebmanifestRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/stats.js': typeof StatsDotjsRoute
+  '/ads.txt': typeof AdsDottxtRoute
+  '/console': typeof ConsoleRoute
   '/_public/_auth': typeof PublicAuthRouteRouteWithChildren
   '/_public/_user': typeof PublicUserRouteRouteWithChildren
   '/admin/posts': typeof AdminPostsRouteRouteWithChildren
@@ -430,6 +456,7 @@ export interface FileRoutesById {
   '/admin/settings/maintenance': typeof AdminSettingsMaintenanceRoute
   '/admin/settings/notifications': typeof AdminSettingsNotificationsRoute
   '/admin/settings/site': typeof AdminSettingsSiteRoute
+  '/admin/settings/security': typeof AdminSettingsSecurityRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/admin/friend-links/': typeof AdminFriendLinksIndexRoute
   '/admin/media/': typeof AdminMediaIndexRoute
@@ -454,6 +481,8 @@ export interface FileRouteTypes {
     | '/site.webmanifest'
     | '/sitemap.xml'
     | '/stats.js'
+    | '/ads.txt'
+    | '/console'
     | '/admin/posts'
     | '/admin/settings'
     | '/$'
@@ -479,6 +508,7 @@ export interface FileRouteTypes {
     | '/admin/settings/maintenance'
     | '/admin/settings/notifications'
     | '/admin/settings/site'
+    | '/admin/settings/security'
     | '/api/auth/$'
     | '/admin/friend-links/'
     | '/admin/media/'
@@ -499,6 +529,8 @@ export interface FileRouteTypes {
     | '/site.webmanifest'
     | '/sitemap.xml'
     | '/stats.js'
+    | '/ads.txt'
+    | '/console'
     | '/'
     | '/$'
     | '/friend-links'
@@ -523,6 +555,7 @@ export interface FileRouteTypes {
     | '/admin/settings/maintenance'
     | '/admin/settings/notifications'
     | '/admin/settings/site'
+    | '/admin/settings/security'
     | '/api/auth/$'
     | '/admin/friend-links'
     | '/admin/media'
@@ -544,6 +577,8 @@ export interface FileRouteTypes {
     | '/site.webmanifest'
     | '/sitemap.xml'
     | '/stats.js'
+    | '/ads.txt'
+    | '/console'
     | '/_public/_auth'
     | '/_public/_user'
     | '/admin/posts'
@@ -572,6 +607,7 @@ export interface FileRouteTypes {
     | '/admin/settings/maintenance'
     | '/admin/settings/notifications'
     | '/admin/settings/site'
+    | '/admin/settings/security'
     | '/api/auth/$'
     | '/admin/friend-links/'
     | '/admin/media/'
@@ -595,6 +631,8 @@ export interface RootRouteChildren {
   SiteDotwebmanifestRoute: typeof SiteDotwebmanifestRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   StatsDotjsRoute: typeof StatsDotjsRoute
+  AdsDottxtRoute: typeof AdsDottxtRoute
+  ConsoleRoute: typeof ConsoleRoute
   ApiSplatRoute: typeof ApiSplatRoute
   ApiAuthRoute: typeof ApiAuthRouteWithChildren
   ApiSendRoute: typeof ApiSendRoute
@@ -664,6 +702,20 @@ declare module '@tanstack/react-router' {
       path: '/stats.js'
       fullPath: '/stats.js'
       preLoaderRoute: typeof StatsDotjsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/ads.txt': {
+      id: '/ads.txt'
+      path: '/ads.txt'
+      fullPath: '/ads.txt'
+      preLoaderRoute: typeof AdsDottxtRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/console': {
+      id: '/console'
+      path: '/console'
+      fullPath: '/console'
+      preLoaderRoute: typeof ConsoleRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_public/': {
@@ -897,6 +949,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminSettingsSiteRouteImport
       parentRoute: typeof AdminSettingsRouteRoute
     }
+    '/admin/settings/security': {
+      id: '/admin/settings/security'
+      path: '/security'
+      fullPath: '/admin/settings/security'
+      preLoaderRoute: typeof AdminSettingsSecurityRouteImport
+      parentRoute: typeof AdminSettingsRouteRoute
+    }
     '/admin/tags/': {
       id: '/admin/tags/'
       path: '/tags'
@@ -1041,6 +1100,7 @@ interface AdminSettingsRouteRouteChildren {
   AdminSettingsMaintenanceRoute: typeof AdminSettingsMaintenanceRoute
   AdminSettingsNotificationsRoute: typeof AdminSettingsNotificationsRoute
   AdminSettingsSiteRoute: typeof AdminSettingsSiteRoute
+  AdminSettingsSecurityRoute: typeof AdminSettingsSecurityRoute
   AdminSettingsIndexRoute: typeof AdminSettingsIndexRoute
 }
 
@@ -1049,6 +1109,7 @@ const AdminSettingsRouteRouteChildren: AdminSettingsRouteRouteChildren = {
   AdminSettingsMaintenanceRoute: AdminSettingsMaintenanceRoute,
   AdminSettingsNotificationsRoute: AdminSettingsNotificationsRoute,
   AdminSettingsSiteRoute: AdminSettingsSiteRoute,
+  AdminSettingsSecurityRoute: AdminSettingsSecurityRoute,
   AdminSettingsIndexRoute: AdminSettingsIndexRoute,
 }
 
@@ -1102,6 +1163,8 @@ const rootRouteChildren: RootRouteChildren = {
   SiteDotwebmanifestRoute: SiteDotwebmanifestRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   StatsDotjsRoute: StatsDotjsRoute,
+  AdsDottxtRoute: AdsDottxtRoute,
+  ConsoleRoute: ConsoleRoute,
   ApiSplatRoute: ApiSplatRoute,
   ApiAuthRoute: ApiAuthRouteWithChildren,
   ApiSendRoute: ApiSendRoute,
