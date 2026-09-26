@@ -1,0 +1,507 @@
+/*
+ * Dark "tech" skin: deep navy surfaces, cyan/violet accents, glass cards,
+ * a faint grid backdrop and glowing navigation chrome.
+ * Loaded after styles.css so it wins inside the same layer.
+ */
+
+@layer base {
+  /* `html.dark` (not `.dark`) so it wins over styles.css at any import order. */
+  html.dark {
+    --fuwari-primary: oklch(0.78 0.15 200);
+    --fuwari-primary-hover: oklch(0.84 0.15 200);
+    --fuwari-primary-active: oklch(0.72 0.16 200);
+    --fuwari-page-bg: oklch(0.145 0.022 265);
+    --fuwari-card-bg: oklch(0.195 0.026 265);
+    --fuwari-btn-content: oklch(0.87 0.04 240);
+    --fuwari-btn-regular-bg: oklch(0.27 0.032 265);
+    --fuwari-btn-regular-bg-hover: oklch(0.32 0.04 265);
+    --fuwari-btn-regular-bg-active: oklch(0.37 0.048 265);
+    --fuwari-btn-plain-bg-hover: oklch(0.24 0.03 265);
+    --fuwari-btn-plain-bg-active: oklch(0.21 0.024 265);
+    --fuwari-meta-divider: rgba(150, 190, 255, 0.22);
+    --fuwari-selection-bg: oklch(0.42 0.12 200);
+    --fuwari-inline-code-bg: oklch(0.3 0.04 265);
+    --fuwari-inline-code-color: oklch(0.85 0.08 200);
+    --fuwari-code-bg: oklch(0.17 0.02 265);
+    --fuwari-input-bg: rgba(255, 255, 255, 0.04);
+    --fuwari-input-border: rgba(150, 190, 255, 0.14);
+    --fuwari-fg: rgb(232 240 255 / 0.92);
+    --fuwari-fg-75: rgb(232 240 255 / 0.75);
+    --fuwari-fg-50: rgb(232 240 255 / 0.5);
+    --fuwari-fg-30: rgb(232 240 255 / 0.3);
+    --fuwari-link-underline: color-mix(
+      in oklab,
+      var(--fuwari-primary) 55%,
+      transparent
+    );
+    --fuwari-link-hover: var(--fuwari-primary);
+    --fuwari-toc-btn-hover: oklch(0.23 0.03 265);
+    --fuwari-toc-btn-active: oklch(0.26 0.035 265);
+    --fuwari-toc-badge-bg: var(--fuwari-btn-regular-bg);
+
+    --tech-accent: oklch(0.78 0.15 200);
+    --tech-accent-2: oklch(0.72 0.17 300);
+    --tech-grid: rgba(140, 180, 255, 0.07);
+    --tech-glow: rgba(80, 150, 255, 0.16);
+    --tech-glow-2: rgba(160, 110, 255, 0.14);
+    --tech-border: rgba(150, 190, 255, 0.16);
+  }
+}
+
+@layer components {
+  /* Ambient grid + glow behind the page. Dark mode only. */
+  .tech-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background-image:
+      linear-gradient(var(--tech-grid) 1px, transparent 1px),
+      linear-gradient(90deg, var(--tech-grid) 1px, transparent 1px);
+    background-size: 44px 44px;
+    mask-image: radial-gradient(
+      ellipse 85% 65% at 50% 0%,
+      #000 35%,
+      transparent 100%
+    );
+  }
+  .tech-backdrop::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(60% 40% at 12% 0%, var(--tech-glow), transparent 70%),
+      radial-gradient(50% 35% at 88% 6%, var(--tech-glow-2), transparent 70%);
+  }
+  html:not(.dark) .tech-backdrop {
+    display: none;
+  }
+
+  /* Glassy navigation bar in dark mode. */
+  html.dark .public-navbar {
+    background: color-mix(in srgb, var(--fuwari-card-bg) 70%, transparent);
+    backdrop-filter: blur(16px) saturate(150%);
+    border: 1px solid var(--tech-border);
+    box-shadow:
+      0 10px 34px -14px rgb(0 0 0 / 0.7),
+      inset 0 1px 0 rgb(255 255 255 / 0.04);
+  }
+
+  html.dark .public-nav-active,
+  html.dark .public-nav-link:hover {
+    color: var(--fuwari-primary);
+  }
+
+  /* Navigation dropdown */
+  .nav-dropdown {
+    position: relative;
+  }
+  .nav-dropdown-trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
+  }
+  .nav-dropdown-caret {
+    transition: transform 0.18s ease;
+    opacity: 0.7;
+  }
+  .nav-dropdown-caret.is-open {
+    transform: rotate(180deg);
+  }
+  .nav-dropdown-panel {
+    position: absolute;
+    top: calc(100% + 0.5rem);
+    left: 0;
+    z-index: 60;
+    min-width: 15rem;
+    padding: 0.375rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+    border-radius: 0.875rem;
+    background: var(--fuwari-card-bg);
+    border: 1px solid var(--fuwari-input-border);
+    box-shadow: 0 18px 44px -14px rgb(0 0 0 / 0.6);
+  }
+  html.dark .nav-dropdown-panel {
+    background: color-mix(in srgb, var(--fuwari-card-bg) 92%, transparent);
+    backdrop-filter: blur(14px);
+    border-color: var(--tech-border);
+  }
+  .nav-dropdown-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.5rem 0.625rem;
+    border-radius: 0.625rem;
+    font-size: 0.875rem;
+    color: var(--fuwari-fg-75);
+    text-decoration: none;
+  }
+  .nav-dropdown-item:hover {
+    background: var(--fuwari-btn-regular-bg);
+    color: var(--fuwari-fg);
+  }
+  .nav-dropdown-item-main {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+  .nav-dropdown-label {
+    font-weight: 500;
+  }
+  .nav-dropdown-desc {
+    font-size: 0.75rem;
+    color: var(--fuwari-fg-50);
+  }
+  .nav-dropdown-all {
+    margin-bottom: 0.125rem;
+    border-bottom: 1px solid var(--fuwari-input-border);
+    color: var(--fuwari-primary);
+    font-size: 0.8125rem;
+  }
+
+  /* Mobile menu groups */
+  .public-menu-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+  .public-menu-group-trigger {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+  }
+  .public-menu-subitems {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+    margin-left: 0.75rem;
+    padding-left: 0.625rem;
+    border-left: 1px solid var(--fuwari-input-border);
+  }
+  .public-menu-subitem {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding: 0.375rem 0.5rem;
+    border-radius: 0.5rem;
+    font-size: 0.8125rem;
+    color: var(--fuwari-fg-50);
+    text-decoration: none;
+  }
+  .public-menu-subitem:hover {
+    color: var(--fuwari-fg);
+    background: var(--fuwari-btn-regular-bg);
+  }
+
+  /* Ad slots */
+  .ad-slot {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    overflow: hidden;
+  }
+  .ad-slot-label {
+    font-size: 0.6875rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--fuwari-fg-30);
+  }
+  .ad-slot-ins {
+    min-height: 90px;
+    border-radius: var(--fuwari-radius-large);
+  }
+
+  /* Consent banner */
+  .ad-consent {
+    position: fixed;
+    left: 50%;
+    bottom: 1.25rem;
+    transform: translateX(-50%);
+    z-index: 90;
+    width: min(34rem, calc(100vw - 2rem));
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 1rem 1.125rem;
+    border-radius: 1rem;
+    background: var(--fuwari-card-bg);
+    border: 1px solid var(--fuwari-input-border);
+    box-shadow: 0 22px 54px -18px rgb(0 0 0 / 0.65);
+  }
+  @media (min-width: 640px) {
+    .ad-consent {
+      flex-direction: row;
+      align-items: center;
+    }
+  }
+  .ad-consent-copy {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    font-size: 0.8125rem;
+    color: var(--fuwari-fg-75);
+  }
+  .ad-consent-copy strong {
+    font-size: 0.875rem;
+    color: var(--fuwari-fg);
+  }
+  .ad-consent-actions {
+    display: flex;
+    gap: 0.5rem;
+  }
+  .ad-consent-button {
+    padding: 0.5rem 0.875rem;
+    border-radius: 0.625rem;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+  .ad-consent-decline {
+    background: var(--fuwari-btn-regular-bg);
+    color: var(--fuwari-btn-content);
+  }
+  .ad-consent-accept {
+    background: var(--fuwari-primary);
+    color: #fff;
+  }
+
+  /* Standalone /console administrator sign-in */
+  .console-shell {
+    position: relative;
+    min-height: 100dvh;
+    display: grid;
+    place-items: center;
+    padding: 1.5rem;
+    background: var(--fuwari-page-bg);
+    overflow: hidden;
+  }
+  .console-card {
+    position: relative;
+    z-index: 1;
+    width: min(24rem, 100%);
+    display: flex;
+    flex-direction: column;
+    gap: 0.875rem;
+    padding: 1.75rem;
+    border-radius: 1.25rem;
+    background: var(--fuwari-card-bg);
+    border: 1px solid var(--fuwari-input-border);
+    box-shadow: 0 26px 60px -22px rgb(0 0 0 / 0.7);
+  }
+  html.dark .console-card {
+    background: color-mix(in srgb, var(--fuwari-card-bg) 82%, transparent);
+    backdrop-filter: blur(18px);
+    border-color: var(--tech-border);
+  }
+  .console-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8125rem;
+    color: var(--fuwari-fg-50);
+  }
+  .console-brand-dot {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 999px;
+    background: var(--fuwari-primary);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--fuwari-primary) 22%, transparent);
+  }
+  .console-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--fuwari-fg);
+  }
+  .console-desc {
+    font-size: 0.8125rem;
+    color: var(--fuwari-fg-50);
+  }
+  .console-form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  .console-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+  .console-field > span {
+    font-size: 0.75rem;
+    color: var(--fuwari-fg-50);
+  }
+  .console-field input {
+    height: 2.75rem;
+    padding: 0 0.875rem;
+    border-radius: 0.75rem;
+    font-size: 0.875rem;
+    color: var(--fuwari-fg);
+    background: var(--fuwari-input-bg);
+    border: 1px solid var(--fuwari-input-border);
+    outline: none;
+  }
+  .console-field input:focus {
+    border-color: var(--fuwari-primary);
+  }
+  .console-error {
+    font-size: 0.8125rem;
+    color: var(--fuwari-danger-fg);
+  }
+  .console-submit {
+    height: 2.75rem;
+    border-radius: 0.75rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #fff;
+    background: var(--fuwari-primary);
+  }
+  .console-submit:disabled {
+    opacity: 0.55;
+  }
+  .console-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    font-size: 0.75rem;
+  }
+  .console-link {
+    color: var(--fuwari-fg-50);
+    text-decoration: none;
+  }
+  .console-link:hover {
+    color: var(--fuwari-primary);
+  }
+
+  /* Settings pages built outside the site studio */
+  .settings-stack {
+    display: flex;
+    flex-direction: column;
+  }
+  .settings-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+}
+
+@layer components {
+  /* Standalone /console administrator sign-in */
+  .console-shell {
+    position: relative;
+    min-height: 100dvh;
+    display: grid;
+    place-items: center;
+    padding: 1.5rem;
+    background: var(--fuwari-page-bg);
+    overflow: hidden;
+  }
+  .console-card {
+    position: relative;
+    z-index: 1;
+    width: min(23rem, 100%);
+    display: flex;
+    flex-direction: column;
+    gap: 0.875rem;
+    padding: 1.75rem;
+    border-radius: 1.25rem;
+    background: var(--fuwari-card-bg);
+    border: 1px solid var(--fuwari-input-border);
+    box-shadow: 0 24px 60px -24px rgb(0 0 0 / 0.55);
+  }
+  html.dark .console-card {
+    border-color: var(--tech-border);
+    box-shadow:
+      0 24px 60px -24px rgb(0 0 0 / 0.8),
+      inset 0 1px 0 rgb(255 255 255 / 0.04);
+  }
+  .console-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9375rem;
+    font-weight: 500;
+    color: var(--fuwari-fg);
+  }
+  .console-brand-dot {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 999px;
+    background: var(--fuwari-primary);
+    box-shadow: 0 0 12px var(--fuwari-primary);
+  }
+  .console-desc {
+    font-size: 0.8125rem;
+    color: var(--fuwari-fg-50);
+  }
+  .console-form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  .console-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+  .console-field > span {
+    font-size: 0.75rem;
+    color: var(--fuwari-fg-50);
+  }
+  .console-field input {
+    height: 2.75rem;
+    padding: 0 0.875rem;
+    border-radius: 0.75rem;
+    font-size: 0.875rem;
+    color: var(--fuwari-fg);
+    background: var(--fuwari-input-bg);
+    border: 1px solid var(--fuwari-input-border);
+    outline: none;
+  }
+  .console-field input:focus {
+    border-color: var(--fuwari-primary);
+  }
+  .console-error {
+    font-size: 0.8125rem;
+    color: var(--fuwari-danger-fg);
+  }
+  .console-submit {
+    height: 2.75rem;
+    border-radius: 0.75rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #fff;
+    background: var(--fuwari-primary);
+  }
+  .console-submit:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+  .console-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    font-size: 0.75rem;
+  }
+  .console-link {
+    color: var(--fuwari-fg-50);
+    text-decoration: none;
+  }
+  .console-link:hover {
+    color: var(--fuwari-primary);
+  }
+
+  /* Shared settings panels rendered outside the site studio */
+  .settings-panel {
+    display: flex;
+    flex-direction: column;
+  }
+}
