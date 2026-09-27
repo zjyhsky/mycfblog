@@ -22,6 +22,10 @@ const serverEnvSchema = z.object({
   UMAMI_PASSWORD: z.string().optional(),
   TURNSTILE_SECRET_KEY: z.string().optional(),
   GITHUB_TOKEN: z.string().optional(),
+  // 首次管理员引导：两者都设置时，Worker 启动时自动创建/同步该管理员账号，
+  // 从而无需邮件验证即可登录 /console。详见 README「首次登录与管理员创建」。
+  ADMIN_USERNAME: z.string().optional(),
+  ADMIN_PASSWORD: z.string().optional(),
 });
 
 export function serverEnv(env: Env) {

@@ -8,6 +8,10 @@ import type { QueueMessage } from "@/lib/queue/queue.schema";
 declare global {
   interface Env extends Cloudflare.Env {
     QUEUE: Queue<QueueMessage>;
+    /** 可选：首次管理员引导，配合 ADMIN_PASSWORD 使用 */
+    ADMIN_USERNAME?: string;
+    /** 可选：首次管理员引导，配合 ADMIN_USERNAME 使用 */
+    ADMIN_PASSWORD?: string;
   }
 
   type DB = DBType;

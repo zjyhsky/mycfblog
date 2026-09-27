@@ -12,6 +12,15 @@ DOMAIN=blog.example.com
 # 生产环境不要设置，或设为 prod。
 ENVIRONMENT=dev
 
+# --- 可选：首次管理员引导 ---
+# 两者同时设置时，Worker 首次处理请求时会自动创建/同步该管理员账号
+# （已验证邮箱 + admin 角色），随后即可用 ADMIN_USERNAME/ADMIN_PASSWORD
+# 登录 /console —— 无需邮件验证，解决「未配邮件服务时无法创建首个管理员」。
+# 用户名：3-32 位，字母/数字/点/短横/下划线；口令至少 8 位。
+# 在 Cloudflare 修改 ADMIN_PASSWORD 后重新部署，口令会自动轮换并使旧会话失效。
+# ADMIN_USERNAME=admin
+# ADMIN_PASSWORD=至少8位
+
 # --- 可选：Umami ---
 # 客户端埋点还需要构建时变量 VITE_UMAMI_WEBSITE_ID，website id 两边填同一个。
 # UMAMI_WEBSITE_ID=your-umami-website-id

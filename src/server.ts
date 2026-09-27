@@ -1,5 +1,6 @@
 import { WorkerEntrypoint } from "cloudflare:workers";
 import handler from "@tanstack/react-start/server-entry";
+import { ensureEnvAdminAccount } from "@/features/admin-console/service/admin-bootstrap";
 import { applyWorkersCachePurge } from "@/features/cache/workers-cache";
 import {
   applyWorkersCachePolicy,
@@ -51,7 +52,10 @@ export class App extends WorkerEntrypoint<Env, AppProps> {
 }
 
 export default {
-  async fetch(request, _env, ctx) {
+  async fetch(request, env, ctx) {
+    // No-op unless ADMIN_USERNAME/ADMIN_PASSWORD are set; memoised per isolate.
+    await ensureEnvAdminAccount(env, getDb(env));
+
     const locale = extractLocaleFromRequest(request);
     return ctx.exports.App({ props: { locale } }).fetch(request, {
       cf: { cacheKey: workersCacheKey(request.url) },
