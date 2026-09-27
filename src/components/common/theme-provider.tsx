@@ -13,7 +13,7 @@ type AppTheme = z.infer<typeof _AppThemeSchema>;
 const themeStorageKey = "ui-theme";
 
 const getStoredUserTheme = createIsomorphicFn()
-  .server((): UserTheme => "system")
+  .server((): UserTheme => "dark")
   .client((): UserTheme => {
     // No explicit choice yet: ship the dark "tech" skin by default.
     const stored = localStorage.getItem(themeStorageKey);
@@ -58,7 +58,7 @@ const setupPreferredListener = createClientOnlyFn(() => {
 const themeScript = (() => {
   function themeFn() {
     try {
-      const storedTheme = localStorage.getItem("ui-theme") || "system";
+      const storedTheme = localStorage.getItem("ui-theme") || "dark";
       const validTheme = ["light", "dark", "system"].includes(storedTheme)
         ? storedTheme
         : "system";
@@ -73,11 +73,7 @@ const themeScript = (() => {
         document.documentElement.classList.add(validTheme);
       }
     } catch {
-      const systemTheme = window.matchMedia("(prefers-color-scheme: dark)")
-        .matches
-        ? "dark"
-        : "light";
-      document.documentElement.classList.add(systemTheme, "system");
+      document.documentElement.classList.add("dark");
     }
   }
   return `(${themeFn.toString()})();`;
