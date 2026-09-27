@@ -19,6 +19,53 @@ const CREDENTIAL_PROVIDER = "credential";
 
 let inFlight: Promise<void> | null = null;
 
+/** Why the runtime credentials could not be used, if they could not be used. */
+export type AdminCredentialCheck =
+  | { status: "not_configured" }
+  | { status: "invalid_env"; field: "username" | "password" }
+  | { status: "mismatch" }
+  | { status: "ok"; username: string };
+
+/** What `ensureAdminAccount` did to the database. */
+export type AdminSyncOutcome = "skipped" | "in_sync" | "created" | "rotated";
+
+/**
+ * Compares the credentials typed into `/console` against the runtime
+ * `ADMIN_USERNAME` / `ADMIN_PASSWORD` variables.
+ *
+ * Used by the `/api/console-login` pre-flight so a failed sign-in can be
+ * explained: "the variables never reached this deployment" is a much more
+ * useful message than "wrong username or password", and it is the single most
+ * common cause of a first-login failure.
+ */
+export function checkEnvAdminCredentials(
+  env: Env,
+  input: { username: string; password: string },
+): AdminCredentialCheck {
+  const username = env.ADMIN_USERNAME?.trim();
+  const password = env.ADMIN_PASSWORD;
+
+  if (!username && !password) return { status: "not_configured" };
+
+  if (!username) return { status: "invalid_env", field: "username" };
+  if (!password) return { status: "invalid_env", field: "password" };
+
+  if (!ADMIN_CONSOLE_USERNAME_PATTERN.test(username)) {
+    return { status: "invalid_env", field: "username" };
+  }
+  if (password.length < ADMIN_CONSOLE_PASSWORD_MIN) {
+    return { status: "invalid_env", field: "password" };
+  }
+
+  const sameUsername =
+    username.toLowerCase() === input.username.trim().toLowerCase();
+  if (!sameUsername || password !== input.password) {
+    return { status: "mismatch" };
+  }
+
+  return { status: "ok", username };
+}
+
 /**
  * Creates — or re-syncs — the administrator account described by the
  * `ADMIN_USERNAME` / `ADMIN_PASSWORD` runtime variables.
@@ -33,47 +80,36 @@ let inFlight: Promise<void> | null = null;
  * - account present, password already matches → no writes at all
  * - password changed in Cloudflare → rotated, old sessions invalidated
  *
- * Safe to call on every request: the work is memoised per isolate.
+ * Idempotent: safe to call from a request handler as well as on every request.
  */
-export function ensureEnvAdminAccount(env: Env, db: DB): Promise<void> {
-  inFlight ??= syncAdminAccount(env, db).catch((error: unknown) => {
-    // Drop the memo so a later request can retry instead of caching failure.
-    inFlight = null;
-    console.error(
-      JSON.stringify({
-        message: "[admin-bootstrap] failed to sync admin account",
-        error: error instanceof Error ? error.message : String(error),
-      }),
-    );
-  });
-  return inFlight;
-}
-
-async function syncAdminAccount(env: Env, db: DB): Promise<void> {
+export async function ensureAdminAccount(
+  env: Env,
+  db: DB,
+): Promise<AdminSyncOutcome> {
   const username = env.ADMIN_USERNAME?.trim();
   const password = env.ADMIN_PASSWORD;
 
-  if (!username && !password) return;
+  if (!username && !password) return "skipped";
 
   if (!username || !password) {
     console.warn(
       "[admin-bootstrap] ADMIN_USERNAME and ADMIN_PASSWORD must both be set; skipping",
     );
-    return;
+    return "skipped";
   }
 
   if (!ADMIN_CONSOLE_USERNAME_PATTERN.test(username)) {
     console.warn(
       `[admin-bootstrap] ADMIN_USERNAME must match ${ADMIN_CONSOLE_USERNAME_PATTERN}; skipping`,
     );
-    return;
+    return "skipped";
   }
 
   if (password.length < ADMIN_CONSOLE_PASSWORD_MIN) {
     console.warn(
       `[admin-bootstrap] ADMIN_PASSWORD must be at least ${ADMIN_CONSOLE_PASSWORD_MIN} characters; skipping`,
     );
-    return;
+    return "skipped";
   }
 
   const { DOMAIN } = serverEnv(env);
@@ -124,7 +160,7 @@ async function syncAdminAccount(env: Env, db: DB): Promise<void> {
         }),
       );
     });
-    return;
+    return "created";
   }
 
   const existing = rows[0];
@@ -153,7 +189,7 @@ async function syncAdminAccount(env: Env, db: DB): Promise<void> {
     ? await verifyPassword(storedHash, password).catch(() => false)
     : false;
 
-  if (matches) return;
+  if (matches) return "in_sync";
 
   const hashed = await hashPassword(password);
   if (credential) {
@@ -182,6 +218,37 @@ async function syncAdminAccount(env: Env, db: DB): Promise<void> {
       username,
     }),
   );
+
+  return "rotated";
+}
+
+/**
+ * Per-isolate memoised wrapper around `ensureAdminAccount` for the request
+ * entrypoint: the sync runs once per isolate instead of once per request.
+ */
+export function ensureEnvAdminAccount(env: Env, db: DB): Promise<void> {
+  inFlight ??= ensureAdminAccount(env, db)
+    .then((outcome) => {
+      if (outcome !== "skipped" && outcome !== "in_sync") {
+        console.log(
+          JSON.stringify({
+            message: "[admin-bootstrap] admin account synced",
+            outcome,
+          }),
+        );
+      }
+    })
+    .catch((error: unknown) => {
+      // Drop the memo so a later request can retry instead of caching failure.
+      inFlight = null;
+      console.error(
+        JSON.stringify({
+          message: "[admin-bootstrap] failed to sync admin account",
+          error: error instanceof Error ? error.message : String(error),
+        }),
+      );
+    });
+  return inFlight;
 }
 
 /**

@@ -38,6 +38,7 @@ import { Route as AdminPostsRouteRouteImport } from './routes/admin/posts/route'
 import { Route as AdminSettingsRouteRouteImport } from './routes/admin/settings/route'
 import { Route as ApiSplatRouteImport } from './routes/api.$'
 import { Route as ApiAuthRouteImport } from './routes/api.auth'
+import { Route as ApiConsoleLoginRouteImport } from './routes/api.console-login'
 import { Route as ApiSendRouteImport } from './routes/api.send'
 import { Route as ImagesSplatRouteImport } from './routes/images.$'
 import { Route as PublicAuthForgotPasswordRouteImport } from './routes/_public/_auth/forgot-password'
@@ -208,6 +209,11 @@ const ApiAuthRoute = ApiAuthRouteImport.update({
   path: '/api/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiConsoleLoginRoute = ApiConsoleLoginRouteImport.update({
+  id: '/api/console-login',
+  path: '/api/console-login',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiSendRoute = ApiSendRouteImport.update({
   id: '/api/send',
   path: '/api/send',
@@ -375,6 +381,7 @@ export interface FileRoutesByFullPath {
   '/admin/$': typeof AdminSplatRoute
   '/api/$': typeof ApiSplatRoute
   '/api/auth': typeof ApiAuthRouteWithChildren
+  '/api/console-login': typeof ApiConsoleLoginRoute
   '/api/send': typeof ApiSendRoute
   '/images/$': typeof ImagesSplatRoute
   '/admin/': typeof AdminIndexRoute
@@ -427,6 +434,7 @@ export interface FileRoutesByTo {
   '/admin/$': typeof AdminSplatRoute
   '/api/$': typeof ApiSplatRoute
   '/api/auth': typeof ApiAuthRouteWithChildren
+  '/api/console-login': typeof ApiConsoleLoginRoute
   '/api/send': typeof ApiSendRoute
   '/images/$': typeof ImagesSplatRoute
   '/admin': typeof AdminIndexRoute
@@ -484,6 +492,7 @@ export interface FileRoutesById {
   '/admin/$': typeof AdminSplatRoute
   '/api/$': typeof ApiSplatRoute
   '/api/auth': typeof ApiAuthRouteWithChildren
+  '/api/console-login': typeof ApiConsoleLoginRoute
   '/api/send': typeof ApiSendRoute
   '/images/$': typeof ImagesSplatRoute
   '/_public/': typeof PublicIndexRoute
@@ -542,6 +551,7 @@ export interface FileRouteTypes {
     | '/admin/$'
     | '/api/$'
     | '/api/auth'
+    | '/api/console-login'
     | '/api/send'
     | '/images/$'
     | '/admin/'
@@ -594,6 +604,7 @@ export interface FileRouteTypes {
     | '/admin/$'
     | '/api/$'
     | '/api/auth'
+    | '/api/console-login'
     | '/api/send'
     | '/images/$'
     | '/admin'
@@ -650,6 +661,7 @@ export interface FileRouteTypes {
     | '/admin/$'
     | '/api/$'
     | '/api/auth'
+    | '/api/console-login'
     | '/api/send'
     | '/images/$'
     | '/_public/'
@@ -695,6 +707,7 @@ export interface RootRouteChildren {
   StatsDotjsRoute: typeof StatsDotjsRoute
   ApiSplatRoute: typeof ApiSplatRoute
   ApiAuthRoute: typeof ApiAuthRouteWithChildren
+  ApiConsoleLoginRoute: typeof ApiConsoleLoginRoute
   ApiSendRoute: typeof ApiSendRoute
   ImagesSplatRoute: typeof ImagesSplatRoute
   ApiExportSplatRoute: typeof ApiExportSplatRoute
@@ -903,6 +916,13 @@ declare module '@tanstack/react-router' {
       path: '/api/auth'
       fullPath: '/api/auth'
       preLoaderRoute: typeof ApiAuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/console-login': {
+      id: '/api/console-login'
+      path: '/api/console-login'
+      fullPath: '/api/console-login'
+      preLoaderRoute: typeof ApiConsoleLoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/send': {
@@ -1271,6 +1291,7 @@ const rootRouteChildren: RootRouteChildren = {
   StatsDotjsRoute: StatsDotjsRoute,
   ApiSplatRoute: ApiSplatRoute,
   ApiAuthRoute: ApiAuthRouteWithChildren,
+  ApiConsoleLoginRoute: ApiConsoleLoginRoute,
   ApiSendRoute: ApiSendRoute,
   ImagesSplatRoute: ImagesSplatRoute,
   ApiExportSplatRoute: ApiExportSplatRoute,

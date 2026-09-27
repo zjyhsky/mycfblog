@@ -19,6 +19,59 @@ export const Route = createFileRoute("/console")({
   component: ConsolePage,
 });
 
+type LoginPreflight =
+  | { ok: true; outcome: string }
+  | { ok: false; reason: string; detail?: string };
+
+/**
+ * Asks the server why a sign-in would fail before trying it.
+ *
+ * better-auth can only report "incorrect username or password", which hides
+ * the usual first-login problem: the runtime variables were never live in this
+ * deployment. The pre-flight also (re)provisions the account when the
+ * submitted credentials match the runtime ones.
+ */
+async function preflight(
+  username: string,
+  password: string,
+): Promise<LoginPreflight | null> {
+  try {
+    const response = await fetch("/api/console-login", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ username, password }),
+    });
+    return (await response.json()) as LoginPreflight;
+  } catch {
+    // Never block the real sign-in on a pre-flight failure.
+    return null;
+  }
+}
+
+/** `null` means "carry on with the normal sign-in". */
+function preflightError(result: LoginPreflight | null): string | null {
+  if (!result || result.ok) return null;
+
+  switch (result.reason) {
+    case "NOT_CONFIGURED": {
+      return m.console_err_not_configured();
+    }
+    case "INVALID_ENV": {
+      return m.console_err_invalid_env();
+    }
+    case "PROVISION_FAILED": {
+      return m.console_err_provision_failed({
+        detail: result.detail ?? "",
+      });
+    }
+    default: {
+      // BAD_CREDENTIALS / RATE_LIMITED: an account created through /register
+      // may still have a different password, so let better-auth decide.
+      return null;
+    }
+  }
+}
+
 function ConsolePage() {
   const { domain } = Route.useLoaderData();
   const navigate = useNavigate();
@@ -35,6 +88,13 @@ function ConsolePage() {
 
     setPending(true);
     setError(null);
+
+    const blocked = preflightError(await preflight(name, password));
+    if (blocked) {
+      setError(blocked);
+      setPending(false);
+      return;
+    }
 
     const result = await authClient.signIn.email({
       email: adminConsoleEmail(name, domain),

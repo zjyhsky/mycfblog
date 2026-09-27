@@ -198,6 +198,12 @@
 Worker 首次收到请求时会自动创建该账号（邮箱已验证 + `admin` 角色），随后打开
 `https://你的域名/console`，用 `ADMIN_USERNAME` / `ADMIN_PASSWORD` 登录即可进入 `/admin`。
 
+> 兜底逻辑：`/console` 每次提交登录前都会请求 `/api/console-login` 做一次前置检查。
+> 只要填写的用户名 + 口令与运行期变量一致，它就会**幂等补齐**账号（账号被删、D1 换库、
+> 或 `DOMAIN` 改过导致内部邮箱变化，都会自动重建/迁移），再交给 better-auth 正常登录；
+> 凭据不一致时则会明确告诉你是「变量没生效」还是「口令打错」，不会再只报一句
+> 「用户名或口令不正确」。
+
 > **为什么需要这条路径**：常规注册 `/register` 要求邮箱验证，而未配置邮件服务时验证邮件发不出去，
 > 首个管理员就永远创建不出来。环境变量引导绕开了这个死结，**不需要任何邮件配置**。
 
@@ -206,11 +212,25 @@ Worker 首次收到请求时会自动创建该账号（邮箱已验证 + `admin`
 - 用户名或口令不合规时同样只告警、不影响站点正常运行。
 
 > **`/console` 提示「用户名或口令不正确」怎么排查**：
+> 0. **先看登录框自己给的提示**：提交时会先请求 `/api/console-login` 做前置检查，它会把「变量没生效」和「口令打错」区分开：
+>    - 「后台未启用：ADMIN_USERNAME / ADMIN_PASSWORD 未在当前部署生效」→ 变量没进运行期：确认加在 **变量和机密**（不是构建变量），并且保存后点了 **部署**；
+>    - 「后台变量格式不正确」→ 用户名须 3–32 位字母 / 数字 / `.` / `-` / `_`，口令至少 8 位；
+>    - 「尝试过于频繁」→ 同一 IP 10 分钟内超过 20 次，稍后再试；
+>    - 仍显示「用户名或口令不正确」→ 变量已生效、账号也已自动补齐，那就是口令确实不一致（例如该账号是走 `/register` 另建的、口令与变量不同）。
 > 1. 变量是否添加在 **变量和机密** 里，且是否点了 **保存并部署**（改运行期变量必须部署新版本才生效）；
 > 2. **D1 数据表是否已建**——自动创建管理员需要 `user` / `account` 表存在。若构建日志里 `[db:migrate]` 显示「未检测到有效的 D1 绑定…已跳过」，说明 D1 绑定没进 `wrangler.jsonc`，请把 `D1_DATABASE_ID` 放进 **构建变量 Build variables** 后重跑构建；
-> 3. 到 Worker 的 **Logs（实时日志）** 里看是否有 `[admin-bootstrap] created admin account`：有则说明账号已建、应是口令输错或该次部署早于变量保存；若看到 `[admin-bootstrap] failed`，其后的错误信息会指出具体原因（多数是表不存在）。
+> 3. 到 Worker 的 **Logs（实时日志）** 里看关键字：
+>    - `[admin-bootstrap] created admin account` / `admin account synced` → 账号已建；
+>    - better-auth 自己的告警可直接定性：`User not found`（该邮箱不存在 → 变量未生效，或建号时的 `DOMAIN` 与当前不一致）、`Credential account not found`、`Invalid password`（口令不一致）、`EMAIL_NOT_VERIFIED`；
+>    - 完全看不到 `[admin-bootstrap]` → 当前部署的版本早于该功能（用「重试构建」只会重建**旧提交**，请对**最新提交**重新触发构建）。
+> 4. 还不行就直接查库：D1 → 数据库 → **Console**，粘贴 SQL（不是文件名）：
+>    ```sql
+>    SELECT id, name, email, role, email_verified FROM user;
+>    SELECT user_id, provider_id, length(password) FROM account;
+>    ```
+>    正常应看到 `你的用户名@console.<DOMAIN>` 一行，`role = admin`、`email_verified = 1`，且 `account` 里有对应 `credential` 记录。
 >
-> 此外，登录页 `/login` 是否显示 GitHub 按钮取决于 `GITHUB_CLIENT_ID/SECRET` 是否配置——**它和 `/console` 是两套独立入口**，没配 GitHub 也不影响用用户名 + 口令进后台。
+> 另外，登录页 `/login` 是否显示 GitHub 按钮取决于 `GITHUB_CLIENT_ID/SECRET` 是否配置——**它和 `/console` 是两套独立入口**，没配 GitHub 也不影响用用户名 + 口令进后台。
 
 **方式 B：邮箱注册（需要已配置邮件服务）**
 
