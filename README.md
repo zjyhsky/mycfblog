@@ -232,7 +232,7 @@
 
 仅当你要在本地调试代码时才需要；**部署不依赖本地命令**。
 
-开发环境要求：[Bun](https://bun.sh) >= 1.3。
+开发环境要求：[Bun](https://bun.sh)（建议与 Cloudflare 构建镜像一致，当前为 **1.2.15**）。
 
 ```bash
 bun install
@@ -247,6 +247,58 @@ bun run dev      # 打开 http://localhost:3000
 
 ---
 
+## 七、常见构建错误排查（Cloudflare）
+
+### 错误 1：`error: lockfile had changes, but lockfile is frozen`
+
+**完整报错**（出现在 Cloudflare 构建日志的「正在安装」阶段）：
+
+```
+Installing project dependencies: bun install --frozen-lockfile
+Resolving dependencies
+Resolved, downloaded and extracted [110]
+error: lockfile had changes, but lockfile is frozen
+note: try re-running without --frozen-lockfile and commit the updated lockfile
+```
+
+**原因**：`bun.lock` 与 `package.json` 不一致。Cloudflare 的自动安装步骤固定使用 `bun install --frozen-lockfile`，只要锁文件需要任何变更就会直接失败。常见触发场景：改了 `package.json` 的依赖（新增/删除/改版本）但没有同步刷新 `bun.lock`。
+
+**修复**（本地执行一次，然后提交推送）：
+
+```bash
+bun install                    # 或 bun install --lockfile-only（只更新锁文件，更快）
+git add bun.lock
+git commit -m "chore: 同步 bun.lock"
+git push
+```
+
+> [!IMPORTANT]
+> **凡是改动 `package.json` 的依赖，就必须重新生成并提交 `bun.lock`**，否则 Cloudflare 构建一定失败。
+> 本地 Bun 版本建议与 Cloudflare 构建镜像保持一致（当前为 **1.2.15**），避免因解析规则差异再次产生锁文件变更。
+
+**临时绕过**（不推荐，仅应急）：把锁文件生成命令换成不带 `--frozen-lockfile` 的方式，或在仓库根目录留一个空的 `bun.lock`。这会牺牲构建可复现性，正式项目请用上面的修复方案。
+
+---
+
+### 错误 2：`Missing required environment variable: XXX`
+
+**完整报错**（出现在「正在构建」阶段，`bun run wrangler:prepare` 时）：
+
+```
+error: Missing required environment variable: DOMAIN
+```
+
+**原因**：`scripts/prepare-wrangler-config.ts` 需要 6 个变量才能生成 `wrangler.jsonc`，缺任意一个都会抛错。对应「[环境变量速查表](#环境变量速查表三类的填写要点)」中的 **A 类 · 构建变量**：
+
+`WORKER_NAME`、`QUEUE_NAME`、`DOMAIN`、`D1_DATABASE_ID`、`KV_NAMESPACE_ID`、`BUCKET_NAME`
+
+**修复**：Cloudflare 控制台 → 你的 Worker → **Settings（设置）→ Build（构建）→ Build variables（构建变量）**，把这 6 个逐一加上，然后点 **Retry build（重试构建）**。
+
+> [!WARNING]
+> 构建变量**不会**自动注入 Worker 运行时。`DOMAIN` 除了填在这里，还必须到 **Settings → Variables and Secrets** 再填一遍（B 类运行期变量），否则 Worker 启动时会因缺少 `DOMAIN` 而崩溃。
+
+---
+
 ## 致谢
 
 - **[Fuwari](https://github.com/saicaca/fuwari)**：本项目优雅清新的界面与动效设计灵感源自 [@saicaca](https://github.com/saicaca) 优秀的开源博客主题。
@@ -255,4 +307,3 @@ bun run dev      # 打开 http://localhost:3000
 ## 开源协议
 
 本项目采用 [GPL-3.0](./LICENSE) 协议开源。
-# mycfblog
