@@ -328,6 +328,31 @@ WORKER_NAME = 你的 Worker 名（如 mycfblog）
 
 ---
 
+### 错误 4：`JavaScript heap out of memory`（vite build 阶段，进程 aborted，exit 134）
+
+**完整报错**（出现在「正在构建」阶段，`vite build` 跑 SSR 打包时）：
+
+```
+<--- Last few GCs --->
+FATAL ERROR: Ineffective mark-compacts near heap limit Allocation failed - JavaScript heap out of memory
+/usr/bin/bash: line 1:  2038 Aborted  (core dumped) vite build
+error: script "build" exited with code 134
+```
+
+**原因**：Cloudflare Workers Builds 的构建 VM 有 **8 GB** 物理内存，但 Node 默认老生代堆上限只有约 **2 GB**；本项目 SSR 需打包约 5900+ 模块，`vite build` 峰值轻松超过 2 GB → 触发 V8 堆上限被 abort。这是 Cloudflare 上 vite/Rollup 项目的常见坑（Sentry 官方 issue 亦用 `NODE_OPTIONS=--max-old-space-size=8192` 解决），**不是代码缺陷**。
+
+**修复**：已在 `package.json` 的 `build` 脚本里给 `vite build` 显式放大堆到 **6 GB**：
+
+```jsonc
+"build": "bun run orpc:contract && node --max-old-space-size=6144 node_modules/vite/bin/vite.js build && bun scripts/ssr-chunk-graph.ts"
+```
+
+构建 VM 有 8 GB 内存，6 GB 留足余量，无需你手动改 CF 配置。直接**重新触发一次构建**（推新提交，或对最新提交触发）即可。
+
+> 若日后模块更多、仍报 OOM，可在同一条命令把 `6144` 调到 `7168`（7 GB，仍低于 8 GB 上限），但不要超过 8 GB，否则会被系统 OOM-kill。
+
+---
+
 ## 致谢
 
 - **[Fuwari](https://github.com/saicaca/fuwari)**：本项目优雅清新的界面与动效设计灵感源自 [@saicaca](https://github.com/saicaca) 优秀的开源博客主题。
