@@ -24,8 +24,12 @@ import { Route as PublicIndexRouteImport } from './routes/_public/index'
 import { Route as PublicSplatRouteImport } from './routes/_public/$'
 import { Route as PublicAuthRouteRouteImport } from './routes/_public/_auth/route'
 import { Route as PublicUserRouteRouteImport } from './routes/_public/_user/route'
+import { Route as PublicAboutRouteImport } from './routes/_public/about'
+import { Route as PublicContactRouteImport } from './routes/_public/contact'
+import { Route as PublicDisclaimerRouteImport } from './routes/_public/disclaimer'
 import { Route as PublicFriendLinksRouteImport } from './routes/_public/friend-links'
 import { Route as PublicPostsRouteImport } from './routes/_public/posts'
+import { Route as PublicPrivacyRouteImport } from './routes/_public/privacy'
 import { Route as PublicSearchRouteImport } from './routes/_public/search'
 import { Route as PublicUnsubscribeRouteImport } from './routes/_public/unsubscribe'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
@@ -52,8 +56,8 @@ import { Route as AdminSettingsIndexRouteImport } from './routes/admin/settings/
 import { Route as AdminSettingsApiKeysRouteImport } from './routes/admin/settings/api-keys'
 import { Route as AdminSettingsMaintenanceRouteImport } from './routes/admin/settings/maintenance'
 import { Route as AdminSettingsNotificationsRouteImport } from './routes/admin/settings/notifications'
-import { Route as AdminSettingsSiteRouteImport } from './routes/admin/settings/site'
 import { Route as AdminSettingsSecurityRouteImport } from './routes/admin/settings/security'
+import { Route as AdminSettingsSiteRouteImport } from './routes/admin/settings/site'
 import { Route as AdminTagsIndexRouteImport } from './routes/admin/tags/index'
 import { Route as ApiAuthSplatRouteImport } from './routes/api.auth.$'
 import { Route as ApiExportSplatRouteImport } from './routes/api.export.$'
@@ -134,6 +138,21 @@ const PublicUserRouteRoute = PublicUserRouteRouteImport.update({
   id: '/_user',
   getParentRoute: () => PublicRouteRoute,
 } as any)
+const PublicAboutRoute = PublicAboutRouteImport.update({
+  id: '/about',
+  path: '/about',
+  getParentRoute: () => PublicRouteRoute,
+} as any)
+const PublicContactRoute = PublicContactRouteImport.update({
+  id: '/contact',
+  path: '/contact',
+  getParentRoute: () => PublicRouteRoute,
+} as any)
+const PublicDisclaimerRoute = PublicDisclaimerRouteImport.update({
+  id: '/disclaimer',
+  path: '/disclaimer',
+  getParentRoute: () => PublicRouteRoute,
+} as any)
 const PublicFriendLinksRoute = PublicFriendLinksRouteImport.update({
   id: '/friend-links',
   path: '/friend-links',
@@ -142,6 +161,11 @@ const PublicFriendLinksRoute = PublicFriendLinksRouteImport.update({
 const PublicPostsRoute = PublicPostsRouteImport.update({
   id: '/posts',
   path: '/posts',
+  getParentRoute: () => PublicRouteRoute,
+} as any)
+const PublicPrivacyRoute = PublicPrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
   getParentRoute: () => PublicRouteRoute,
 } as any)
 const PublicSearchRoute = PublicSearchRouteImport.update({
@@ -278,14 +302,14 @@ const AdminSettingsNotificationsRoute =
     path: '/notifications',
     getParentRoute: () => AdminSettingsRouteRoute,
   } as any)
-const AdminSettingsSiteRoute = AdminSettingsSiteRouteImport.update({
-  id: '/site',
-  path: '/site',
-  getParentRoute: () => AdminSettingsRouteRoute,
-} as any)
 const AdminSettingsSecurityRoute = AdminSettingsSecurityRouteImport.update({
   id: '/security',
   path: '/security',
+  getParentRoute: () => AdminSettingsRouteRoute,
+} as any)
+const AdminSettingsSiteRoute = AdminSettingsSiteRouteImport.update({
+  id: '/site',
+  path: '/site',
   getParentRoute: () => AdminSettingsRouteRoute,
 } as any)
 const AdminTagsIndexRoute = AdminTagsIndexRouteImport.update({
@@ -328,20 +352,24 @@ const AdminPostsEditIdHistoryRevisionIdRoute =
 export interface FileRoutesByFullPath {
   '/': typeof PublicIndexRoute
   '/admin': typeof AdminRouteRouteWithChildren
+  '/ads.txt': typeof AdsDottxtRoute
   '/atom.xml': typeof AtomDotxmlRoute
+  '/console': typeof ConsoleRoute
   '/feed.json': typeof FeedDotjsonRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/rss.xml': typeof RssDotxmlRoute
   '/site.webmanifest': typeof SiteDotwebmanifestRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/stats.js': typeof StatsDotjsRoute
-  '/ads.txt': typeof AdsDottxtRoute
-  '/console': typeof ConsoleRoute
   '/admin/posts': typeof AdminPostsRouteRouteWithChildren
   '/admin/settings': typeof AdminSettingsRouteRouteWithChildren
   '/$': typeof PublicSplatRoute
+  '/about': typeof PublicAboutRoute
+  '/contact': typeof PublicContactRoute
+  '/disclaimer': typeof PublicDisclaimerRoute
   '/friend-links': typeof PublicFriendLinksRoute
   '/posts': typeof PublicPostsRoute
+  '/privacy': typeof PublicPrivacyRoute
   '/search': typeof PublicSearchRoute
   '/unsubscribe': typeof PublicUnsubscribeRoute
   '/admin/$': typeof AdminSplatRoute
@@ -361,8 +389,8 @@ export interface FileRoutesByFullPath {
   '/admin/settings/api-keys': typeof AdminSettingsApiKeysRoute
   '/admin/settings/maintenance': typeof AdminSettingsMaintenanceRoute
   '/admin/settings/notifications': typeof AdminSettingsNotificationsRoute
-  '/admin/settings/site': typeof AdminSettingsSiteRoute
   '/admin/settings/security': typeof AdminSettingsSecurityRoute
+  '/admin/settings/site': typeof AdminSettingsSiteRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/export/$': typeof ApiExportSplatRoute
   '/admin/friend-links/': typeof AdminFriendLinksIndexRoute
@@ -377,19 +405,23 @@ export interface FileRoutesByFullPath {
   '/admin/posts/edit/$id/history/$revisionId': typeof AdminPostsEditIdHistoryRevisionIdRoute
 }
 export interface FileRoutesByTo {
+  '/ads.txt': typeof AdsDottxtRoute
   '/atom.xml': typeof AtomDotxmlRoute
+  '/console': typeof ConsoleRoute
   '/feed.json': typeof FeedDotjsonRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/rss.xml': typeof RssDotxmlRoute
   '/site.webmanifest': typeof SiteDotwebmanifestRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/stats.js': typeof StatsDotjsRoute
-  '/ads.txt': typeof AdsDottxtRoute
-  '/console': typeof ConsoleRoute
   '/': typeof PublicIndexRoute
   '/$': typeof PublicSplatRoute
+  '/about': typeof PublicAboutRoute
+  '/contact': typeof PublicContactRoute
+  '/disclaimer': typeof PublicDisclaimerRoute
   '/friend-links': typeof PublicFriendLinksRoute
   '/posts': typeof PublicPostsRoute
+  '/privacy': typeof PublicPrivacyRoute
   '/search': typeof PublicSearchRoute
   '/unsubscribe': typeof PublicUnsubscribeRoute
   '/admin/$': typeof AdminSplatRoute
@@ -409,8 +441,8 @@ export interface FileRoutesByTo {
   '/admin/settings/api-keys': typeof AdminSettingsApiKeysRoute
   '/admin/settings/maintenance': typeof AdminSettingsMaintenanceRoute
   '/admin/settings/notifications': typeof AdminSettingsNotificationsRoute
-  '/admin/settings/site': typeof AdminSettingsSiteRoute
   '/admin/settings/security': typeof AdminSettingsSecurityRoute
+  '/admin/settings/site': typeof AdminSettingsSiteRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/export/$': typeof ApiExportSplatRoute
   '/admin/friend-links': typeof AdminFriendLinksIndexRoute
@@ -427,22 +459,26 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_public': typeof PublicRouteRouteWithChildren
   '/admin': typeof AdminRouteRouteWithChildren
+  '/ads.txt': typeof AdsDottxtRoute
   '/atom.xml': typeof AtomDotxmlRoute
+  '/console': typeof ConsoleRoute
   '/feed.json': typeof FeedDotjsonRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/rss.xml': typeof RssDotxmlRoute
   '/site.webmanifest': typeof SiteDotwebmanifestRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/stats.js': typeof StatsDotjsRoute
-  '/ads.txt': typeof AdsDottxtRoute
-  '/console': typeof ConsoleRoute
   '/_public/_auth': typeof PublicAuthRouteRouteWithChildren
   '/_public/_user': typeof PublicUserRouteRouteWithChildren
   '/admin/posts': typeof AdminPostsRouteRouteWithChildren
   '/admin/settings': typeof AdminSettingsRouteRouteWithChildren
   '/_public/$': typeof PublicSplatRoute
+  '/_public/about': typeof PublicAboutRoute
+  '/_public/contact': typeof PublicContactRoute
+  '/_public/disclaimer': typeof PublicDisclaimerRoute
   '/_public/friend-links': typeof PublicFriendLinksRoute
   '/_public/posts': typeof PublicPostsRoute
+  '/_public/privacy': typeof PublicPrivacyRoute
   '/_public/search': typeof PublicSearchRoute
   '/_public/unsubscribe': typeof PublicUnsubscribeRoute
   '/admin/$': typeof AdminSplatRoute
@@ -463,8 +499,8 @@ export interface FileRoutesById {
   '/admin/settings/api-keys': typeof AdminSettingsApiKeysRoute
   '/admin/settings/maintenance': typeof AdminSettingsMaintenanceRoute
   '/admin/settings/notifications': typeof AdminSettingsNotificationsRoute
-  '/admin/settings/site': typeof AdminSettingsSiteRoute
   '/admin/settings/security': typeof AdminSettingsSecurityRoute
+  '/admin/settings/site': typeof AdminSettingsSiteRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/export/$': typeof ApiExportSplatRoute
   '/admin/friend-links/': typeof AdminFriendLinksIndexRoute
@@ -483,20 +519,24 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/admin'
+    | '/ads.txt'
     | '/atom.xml'
+    | '/console'
     | '/feed.json'
     | '/robots.txt'
     | '/rss.xml'
     | '/site.webmanifest'
     | '/sitemap.xml'
     | '/stats.js'
-    | '/ads.txt'
-    | '/console'
     | '/admin/posts'
     | '/admin/settings'
     | '/$'
+    | '/about'
+    | '/contact'
+    | '/disclaimer'
     | '/friend-links'
     | '/posts'
+    | '/privacy'
     | '/search'
     | '/unsubscribe'
     | '/admin/$'
@@ -516,8 +556,8 @@ export interface FileRouteTypes {
     | '/admin/settings/api-keys'
     | '/admin/settings/maintenance'
     | '/admin/settings/notifications'
-    | '/admin/settings/site'
     | '/admin/settings/security'
+    | '/admin/settings/site'
     | '/api/auth/$'
     | '/api/export/$'
     | '/admin/friend-links/'
@@ -532,19 +572,23 @@ export interface FileRouteTypes {
     | '/admin/posts/edit/$id/history/$revisionId'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/ads.txt'
     | '/atom.xml'
+    | '/console'
     | '/feed.json'
     | '/robots.txt'
     | '/rss.xml'
     | '/site.webmanifest'
     | '/sitemap.xml'
     | '/stats.js'
-    | '/ads.txt'
-    | '/console'
     | '/'
     | '/$'
+    | '/about'
+    | '/contact'
+    | '/disclaimer'
     | '/friend-links'
     | '/posts'
+    | '/privacy'
     | '/search'
     | '/unsubscribe'
     | '/admin/$'
@@ -564,8 +608,8 @@ export interface FileRouteTypes {
     | '/admin/settings/api-keys'
     | '/admin/settings/maintenance'
     | '/admin/settings/notifications'
-    | '/admin/settings/site'
     | '/admin/settings/security'
+    | '/admin/settings/site'
     | '/api/auth/$'
     | '/api/export/$'
     | '/admin/friend-links'
@@ -581,22 +625,26 @@ export interface FileRouteTypes {
     | '__root__'
     | '/_public'
     | '/admin'
+    | '/ads.txt'
     | '/atom.xml'
+    | '/console'
     | '/feed.json'
     | '/robots.txt'
     | '/rss.xml'
     | '/site.webmanifest'
     | '/sitemap.xml'
     | '/stats.js'
-    | '/ads.txt'
-    | '/console'
     | '/_public/_auth'
     | '/_public/_user'
     | '/admin/posts'
     | '/admin/settings'
     | '/_public/$'
+    | '/_public/about'
+    | '/_public/contact'
+    | '/_public/disclaimer'
     | '/_public/friend-links'
     | '/_public/posts'
+    | '/_public/privacy'
     | '/_public/search'
     | '/_public/unsubscribe'
     | '/admin/$'
@@ -617,8 +665,8 @@ export interface FileRouteTypes {
     | '/admin/settings/api-keys'
     | '/admin/settings/maintenance'
     | '/admin/settings/notifications'
-    | '/admin/settings/site'
     | '/admin/settings/security'
+    | '/admin/settings/site'
     | '/api/auth/$'
     | '/api/export/$'
     | '/admin/friend-links/'
@@ -636,20 +684,20 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   PublicRouteRoute: typeof PublicRouteRouteWithChildren
   AdminRouteRoute: typeof AdminRouteRouteWithChildren
+  AdsDottxtRoute: typeof AdsDottxtRoute
   AtomDotxmlRoute: typeof AtomDotxmlRoute
+  ConsoleRoute: typeof ConsoleRoute
   FeedDotjsonRoute: typeof FeedDotjsonRoute
   RobotsDottxtRoute: typeof RobotsDottxtRoute
   RssDotxmlRoute: typeof RssDotxmlRoute
   SiteDotwebmanifestRoute: typeof SiteDotwebmanifestRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   StatsDotjsRoute: typeof StatsDotjsRoute
-  AdsDottxtRoute: typeof AdsDottxtRoute
-  ConsoleRoute: typeof ConsoleRoute
   ApiSplatRoute: typeof ApiSplatRoute
   ApiAuthRoute: typeof ApiAuthRouteWithChildren
   ApiSendRoute: typeof ApiSendRoute
-  ApiExportSplatRoute: typeof ApiExportSplatRoute
   ImagesSplatRoute: typeof ImagesSplatRoute
+  ApiExportSplatRoute: typeof ApiExportSplatRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -668,11 +716,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/ads.txt': {
+      id: '/ads.txt'
+      path: '/ads.txt'
+      fullPath: '/ads.txt'
+      preLoaderRoute: typeof AdsDottxtRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/atom.xml': {
       id: '/atom.xml'
       path: '/atom.xml'
       fullPath: '/atom.xml'
       preLoaderRoute: typeof AtomDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/console': {
+      id: '/console'
+      path: '/console'
+      fullPath: '/console'
+      preLoaderRoute: typeof ConsoleRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/feed.json': {
@@ -717,20 +779,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StatsDotjsRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/ads.txt': {
-      id: '/ads.txt'
-      path: '/ads.txt'
-      fullPath: '/ads.txt'
-      preLoaderRoute: typeof AdsDottxtRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/console': {
-      id: '/console'
-      path: '/console'
-      fullPath: '/console'
-      preLoaderRoute: typeof ConsoleRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/_public/': {
       id: '/_public/'
       path: '/'
@@ -759,6 +807,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PublicUserRouteRouteImport
       parentRoute: typeof PublicRouteRoute
     }
+    '/_public/about': {
+      id: '/_public/about'
+      path: '/about'
+      fullPath: '/about'
+      preLoaderRoute: typeof PublicAboutRouteImport
+      parentRoute: typeof PublicRouteRoute
+    }
+    '/_public/contact': {
+      id: '/_public/contact'
+      path: '/contact'
+      fullPath: '/contact'
+      preLoaderRoute: typeof PublicContactRouteImport
+      parentRoute: typeof PublicRouteRoute
+    }
+    '/_public/disclaimer': {
+      id: '/_public/disclaimer'
+      path: '/disclaimer'
+      fullPath: '/disclaimer'
+      preLoaderRoute: typeof PublicDisclaimerRouteImport
+      parentRoute: typeof PublicRouteRoute
+    }
     '/_public/friend-links': {
       id: '/_public/friend-links'
       path: '/friend-links'
@@ -771,6 +840,13 @@ declare module '@tanstack/react-router' {
       path: '/posts'
       fullPath: '/posts'
       preLoaderRoute: typeof PublicPostsRouteImport
+      parentRoute: typeof PublicRouteRoute
+    }
+    '/_public/privacy': {
+      id: '/_public/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PublicPrivacyRouteImport
       parentRoute: typeof PublicRouteRoute
     }
     '/_public/search': {
@@ -955,18 +1031,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminSettingsNotificationsRouteImport
       parentRoute: typeof AdminSettingsRouteRoute
     }
-    '/admin/settings/site': {
-      id: '/admin/settings/site'
-      path: '/site'
-      fullPath: '/admin/settings/site'
-      preLoaderRoute: typeof AdminSettingsSiteRouteImport
-      parentRoute: typeof AdminSettingsRouteRoute
-    }
     '/admin/settings/security': {
       id: '/admin/settings/security'
       path: '/security'
       fullPath: '/admin/settings/security'
       preLoaderRoute: typeof AdminSettingsSecurityRouteImport
+      parentRoute: typeof AdminSettingsRouteRoute
+    }
+    '/admin/settings/site': {
+      id: '/admin/settings/site'
+      path: '/site'
+      fullPath: '/admin/settings/site'
+      preLoaderRoute: typeof AdminSettingsSiteRouteImport
       parentRoute: typeof AdminSettingsRouteRoute
     }
     '/admin/tags/': {
@@ -1059,8 +1135,12 @@ interface PublicRouteRouteChildren {
   PublicAuthRouteRoute: typeof PublicAuthRouteRouteWithChildren
   PublicUserRouteRoute: typeof PublicUserRouteRouteWithChildren
   PublicSplatRoute: typeof PublicSplatRoute
+  PublicAboutRoute: typeof PublicAboutRoute
+  PublicContactRoute: typeof PublicContactRoute
+  PublicDisclaimerRoute: typeof PublicDisclaimerRoute
   PublicFriendLinksRoute: typeof PublicFriendLinksRoute
   PublicPostsRoute: typeof PublicPostsRoute
+  PublicPrivacyRoute: typeof PublicPrivacyRoute
   PublicSearchRoute: typeof PublicSearchRoute
   PublicUnsubscribeRoute: typeof PublicUnsubscribeRoute
   PublicIndexRoute: typeof PublicIndexRoute
@@ -1071,8 +1151,12 @@ const PublicRouteRouteChildren: PublicRouteRouteChildren = {
   PublicAuthRouteRoute: PublicAuthRouteRouteWithChildren,
   PublicUserRouteRoute: PublicUserRouteRouteWithChildren,
   PublicSplatRoute: PublicSplatRoute,
+  PublicAboutRoute: PublicAboutRoute,
+  PublicContactRoute: PublicContactRoute,
+  PublicDisclaimerRoute: PublicDisclaimerRoute,
   PublicFriendLinksRoute: PublicFriendLinksRoute,
   PublicPostsRoute: PublicPostsRoute,
+  PublicPrivacyRoute: PublicPrivacyRoute,
   PublicSearchRoute: PublicSearchRoute,
   PublicUnsubscribeRoute: PublicUnsubscribeRoute,
   PublicIndexRoute: PublicIndexRoute,
@@ -1119,8 +1203,8 @@ interface AdminSettingsRouteRouteChildren {
   AdminSettingsApiKeysRoute: typeof AdminSettingsApiKeysRoute
   AdminSettingsMaintenanceRoute: typeof AdminSettingsMaintenanceRoute
   AdminSettingsNotificationsRoute: typeof AdminSettingsNotificationsRoute
-  AdminSettingsSiteRoute: typeof AdminSettingsSiteRoute
   AdminSettingsSecurityRoute: typeof AdminSettingsSecurityRoute
+  AdminSettingsSiteRoute: typeof AdminSettingsSiteRoute
   AdminSettingsIndexRoute: typeof AdminSettingsIndexRoute
 }
 
@@ -1128,8 +1212,8 @@ const AdminSettingsRouteRouteChildren: AdminSettingsRouteRouteChildren = {
   AdminSettingsApiKeysRoute: AdminSettingsApiKeysRoute,
   AdminSettingsMaintenanceRoute: AdminSettingsMaintenanceRoute,
   AdminSettingsNotificationsRoute: AdminSettingsNotificationsRoute,
-  AdminSettingsSiteRoute: AdminSettingsSiteRoute,
   AdminSettingsSecurityRoute: AdminSettingsSecurityRoute,
+  AdminSettingsSiteRoute: AdminSettingsSiteRoute,
   AdminSettingsIndexRoute: AdminSettingsIndexRoute,
 }
 
@@ -1176,20 +1260,20 @@ const ApiAuthRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   PublicRouteRoute: PublicRouteRouteWithChildren,
   AdminRouteRoute: AdminRouteRouteWithChildren,
+  AdsDottxtRoute: AdsDottxtRoute,
   AtomDotxmlRoute: AtomDotxmlRoute,
+  ConsoleRoute: ConsoleRoute,
   FeedDotjsonRoute: FeedDotjsonRoute,
   RobotsDottxtRoute: RobotsDottxtRoute,
   RssDotxmlRoute: RssDotxmlRoute,
   SiteDotwebmanifestRoute: SiteDotwebmanifestRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   StatsDotjsRoute: StatsDotjsRoute,
-  AdsDottxtRoute: AdsDottxtRoute,
-  ConsoleRoute: ConsoleRoute,
   ApiSplatRoute: ApiSplatRoute,
   ApiAuthRoute: ApiAuthRouteWithChildren,
   ApiSendRoute: ApiSendRoute,
-  ApiExportSplatRoute: ApiExportSplatRoute,
   ImagesSplatRoute: ImagesSplatRoute,
+  ApiExportSplatRoute: ApiExportSplatRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
