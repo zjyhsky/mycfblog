@@ -4,9 +4,15 @@
 # --- 必填 ---
 BETTER_AUTH_SECRET=your-secret-key-run-openssl-rand-hex-32
 BETTER_AUTH_URL=http://localhost:3000
-GITHUB_CLIENT_ID=your-github-client-id
-GITHUB_CLIENT_SECRET=your-github-client-secret
 DOMAIN=blog.example.com
+
+# --- 可选：GitHub 登录 ---
+# 两者都填才会启用 GitHub 登录；留空时登录页不会显示 GitHub 按钮，
+# 也不会注册该 provider（避免点了必然失败）。
+# 在 GitHub → Settings → Developer settings → OAuth Apps 创建应用，
+# 回调地址填 https://你的域名/api/auth/callback/github
+# GITHUB_CLIENT_ID=your-github-client-id
+# GITHUB_CLIENT_SECRET=your-github-client-secret
 
 # 仅本地开发使用。设为 dev 时不会真正发信，验证链接打在控制台。
 # 生产环境不要设置，或设为 prod。

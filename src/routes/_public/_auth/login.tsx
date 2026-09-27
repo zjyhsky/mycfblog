@@ -20,7 +20,9 @@ export const Route = createFileRoute("/_public/_auth/login")({
 });
 
 function RouteComponent() {
-  const { isEmailConfigured } = useRouteContext({ from: "/_public/_auth" });
+  const { isEmailConfigured, socialProviders } = useRouteContext({
+    from: "/_public/_auth",
+  });
   const search = Route.useSearch();
   const {
     isPending: turnstilePending,
@@ -51,6 +53,7 @@ function RouteComponent() {
   return (
     <LoginPage
       isEmailConfigured={isEmailConfigured}
+      githubEnabled={socialProviders.github}
       loginForm={{
         ...loginForm,
         turnstilePending,

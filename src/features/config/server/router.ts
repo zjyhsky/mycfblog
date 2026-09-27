@@ -10,6 +10,7 @@ import {
   CONFIG_ERRORS,
 } from "@/features/config/config.admin.schema";
 import * as ConfigService from "@/features/config/service/config.service";
+import { getSocialProviders } from "@/lib/auth/social-providers";
 import { serverEnv } from "@/lib/env/server.env";
 import { m } from "@/paraglide/messages";
 import { adminProcedure, publicProcedure } from "@/lib/orpc/procedure";
@@ -31,6 +32,15 @@ const siteDomain = publicProcedure
     tags: ["Site"],
   })
   .handler(({ context }) => serverEnv(context.env).DOMAIN);
+
+const socialProviders = publicProcedure
+  .route({
+    method: "GET",
+    path: "/site/social-providers",
+    summary: "Which social login providers are available",
+    tags: ["Site"],
+  })
+  .handler(({ context }) => getSocialProviders(context.env));
 
 const getSystem = adminProcedure
   .errors(CONFIG_ERRORS)
@@ -90,6 +100,7 @@ const uploadAsset = adminProcedure
 export default {
   siteConfig,
   siteDomain,
+  socialProviders,
   admin: {
     get: getSystem,
     update: updateSystem,

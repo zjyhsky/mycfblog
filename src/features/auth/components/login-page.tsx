@@ -9,6 +9,7 @@ import { m } from "@/paraglide/messages";
 
 interface LoginPageProps {
   isEmailConfigured: boolean;
+  githubEnabled: boolean;
   loginForm: ReturnType<typeof useLoginForm> & { turnstilePending: boolean };
   socialLogin: ReturnType<typeof useSocialLogin>;
   turnstileElement: ReactNode;
@@ -16,6 +17,7 @@ interface LoginPageProps {
 
 export function LoginPage({
   isEmailConfigured,
+  githubEnabled,
   loginForm,
   socialLogin,
   turnstileElement,
@@ -43,24 +45,32 @@ export function LoginPage({
         <h1>{m.login_title()}</h1>
         <p>{m.login_welcome_back()}</p>
       </header>
-      <button
-        type="button"
-        onClick={socialLogin.handleGithubLogin}
-        disabled={busy}
-        className={`auth-action ${isEmailConfigured ? "fuwari-btn-regular" : "fuwari-btn-primary"}`}
-      >
-        {socialLogin.isLoading ? (
-          <Loader2 size={18} className="animate-spin" />
-        ) : (
-          <GithubIcon size={18} />
-        )}
-        {socialLogin.isLoading
-          ? m.login_social_connecting()
-          : m.login_github_continue()}
-      </button>
-      {socialLogin.errorMessage && (
+      {githubEnabled && (
+        <button
+          type="button"
+          onClick={socialLogin.handleGithubLogin}
+          disabled={busy}
+          className={`auth-action ${isEmailConfigured ? "fuwari-btn-regular" : "fuwari-btn-primary"}`}
+        >
+          {socialLogin.isLoading ? (
+            <Loader2 size={18} className="animate-spin" />
+          ) : (
+            <GithubIcon size={18} />
+          )}
+          {socialLogin.isLoading
+            ? m.login_social_connecting()
+            : m.login_github_continue()}
+        </button>
+      )}
+      {githubEnabled && socialLogin.errorMessage && (
         <p className="auth-error" role="alert">
           {socialLogin.errorMessage}
+        </p>
+      )}
+      {!githubEnabled && !isEmailConfigured && (
+        <p className="auth-note">
+          {m.console_desc()}{" "}
+          <Link to="/console">{m.console_title()}</Link>
         </p>
       )}
       {isEmailConfigured && (

@@ -40,12 +40,18 @@ export function getAuth({ db, env }: { db: DB; env: Env }) {
 
   return betterAuth({
     ...createAuthConfig(),
-    socialProviders: {
-      github: {
-        clientId: GITHUB_CLIENT_ID,
-        clientSecret: GITHUB_CLIENT_SECRET,
-      },
-    },
+    // 仅在凭据齐全时注册 GitHub provider：否则按钮点了必然失败，
+    // 前端会依据 getSocialProviders() 隐藏该入口。
+    ...(GITHUB_CLIENT_ID && GITHUB_CLIENT_SECRET
+      ? {
+          socialProviders: {
+            github: {
+              clientId: GITHUB_CLIENT_ID,
+              clientSecret: GITHUB_CLIENT_SECRET,
+            },
+          },
+        }
+      : {}),
     hooks: {
       before: createAuthMiddleware(async (ctx) => {
         if (ctx.path === "/sign-up/email") {

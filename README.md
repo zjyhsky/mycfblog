@@ -173,8 +173,8 @@
 | :--- | :--- |
 | `BETTER_AUTH_SECRET` | 随机长串（如密码生成器生成的 32+ 位随机串） |
 | `BETTER_AUTH_URL` | 完整 https 地址 `https://6070809.xyz` |
-| `GITHUB_CLIENT_ID` | GitHub OAuth App 的 Client ID（回调 `https://你的域名/api/auth/callback/github`）；暂不用 GitHub 登录可留空 |
-| `GITHUB_CLIENT_SECRET` | 对应 Secret；同上可留空 |
+| `GITHUB_CLIENT_ID` | 可留空。填了才启用 GitHub 登录；留空时登录页**不显示**该按钮（回调地址 `https://你的域名/api/auth/callback/github`） |
+| `GITHUB_CLIENT_SECRET` | 可留空，与 `GITHUB_CLIENT_ID` 同时填才生效 |
 
 ---
 
@@ -204,6 +204,13 @@ Worker 首次收到请求时会自动创建该账号（邮箱已验证 + `admin`
 - 修改 `ADMIN_PASSWORD` 后重新部署，口令会自动轮换，并使该账号的旧会话立即失效。
 - 两者都**不设置**时功能完全静默（不访问数据库）；只设置了其中一个会在日志里告警并跳过。
 - 用户名或口令不合规时同样只告警、不影响站点正常运行。
+
+> **`/console` 提示「用户名或口令不正确」怎么排查**：
+> 1. 变量是否添加在 **变量和机密** 里，且是否点了 **保存并部署**（改运行期变量必须部署新版本才生效）；
+> 2. **D1 数据表是否已建**——自动创建管理员需要 `user` / `account` 表存在。若构建日志里 `[db:migrate]` 显示「未检测到有效的 D1 绑定…已跳过」，说明 D1 绑定没进 `wrangler.jsonc`，请把 `D1_DATABASE_ID` 放进 **构建变量 Build variables** 后重跑构建；
+> 3. 到 Worker 的 **Logs（实时日志）** 里看是否有 `[admin-bootstrap] created admin account`：有则说明账号已建、应是口令输错或该次部署早于变量保存；若看到 `[admin-bootstrap] failed`，其后的错误信息会指出具体原因（多数是表不存在）。
+>
+> 此外，登录页 `/login` 是否显示 GitHub 按钮取决于 `GITHUB_CLIENT_ID/SECRET` 是否配置——**它和 `/console` 是两套独立入口**，没配 GitHub 也不影响用用户名 + 口令进后台。
 
 **方式 B：邮箱注册（需要已配置邮件服务）**
 
@@ -406,6 +413,32 @@ bunx wrangler deploy
 ```
 
 保存后重新触发构建即可。注意：构建步骤已 `bun install`，`node_modules/.bin/wrangler` 一定存在，所以 `npx` 会解析到本地版本、不会去联网下载。
+
+---
+
+### 错误 6：登录页点 GitHub 按钮不跳转，或跳到 GitHub 后报错
+
+**现象**：在 `/login` 点击「使用 GitHub 继续」后没有跳到 GitHub；或跳到 GitHub 的授权页后显示错误；应用内则提示「请稍后重试。」。
+
+**原因（两种）**：
+
+1. **凭据是占位值或为空**。`GITHUB_CLIENT_ID` / `GITHUB_CLIENT_SECRET` 必须来自一个**真实的 GitHub OAuth App**，随便填一个字符串是无法完成授权的。
+2. **回调地址不匹配**。GitHub OAuth App 里填的 `Authorization callback URL` 必须与站点域名严格一致。
+
+**修复（要用 GitHub 登录时）**：
+
+1. 打开 GitHub → **Settings → Developer settings → OAuth Apps → New OAuth App**。
+2. **Homepage URL** 填 `https://你的域名`。
+3. **Authorization callback URL** 必须**精确**填：
+   ```
+   https://你的域名/api/auth/callback/github
+   ```
+4. 创建后复制 **Client ID**，再点 **Generate a new client secret** 生成 **Client secret**。
+5. 到 Cloudflare Worker → 设置 → 变量和机密 → 分别填入 `GITHUB_CLIENT_ID`（变量）与 `GITHUB_CLIENT_SECRET`（**机密**），保存并重新部署。
+
+> **不想用 GitHub 登录**：把这两个变量**删掉**（或留空）并重新部署即可。本版起它们已是可选——未配置时登录页不显示 GitHub 按钮，也不会注册该 provider，不会再出现「点了报错」的情况。
+>
+> **注意**：`/console`（用户名 + 口令）是独立入口，**不依赖** GitHub 与邮件服务，推荐用它进入后台。
 
 ---
 

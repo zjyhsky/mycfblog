@@ -10,8 +10,9 @@ const serverEnvSchema = z.object({
   BETTER_AUTH_SECRET: z.string(),
   BETTER_AUTH_URL: z.url(),
   LOCALE: localeSchema.catch("zh"),
-  GITHUB_CLIENT_ID: z.string(),
-  GITHUB_CLIENT_SECRET: z.string(),
+  // 可选：未配置时 GitHub 登录按钮不会显示，也不注册对应 provider。
+  GITHUB_CLIENT_ID: z.string().optional(),
+  GITHUB_CLIENT_SECRET: z.string().optional(),
   DOMAIN: domainSchema,
   ENVIRONMENT: z.enum(["dev", "prod", "test"]).optional(),
   UMAMI_WEBSITE_ID: z.string().optional(),

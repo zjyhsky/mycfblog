@@ -22,6 +22,8 @@ export const sessionQuery = queryOptions({
 
 export const emailConfiguredQuery = orpc.email.configured.queryOptions();
 
+export const socialProvidersQuery = orpc.config.socialProviders.queryOptions();
+
 export function resetAuthBoundQueries(queryClient: QueryClient) {
   queryClient.removeQueries({ queryKey: AUTH_KEYS.session });
   queryClient.invalidateQueries({ queryKey: orpc.comments.key() });
