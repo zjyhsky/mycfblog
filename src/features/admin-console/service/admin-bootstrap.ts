@@ -23,11 +23,68 @@ let inFlight: Promise<void> | null = null;
 export type AdminCredentialCheck =
   | { status: "not_configured" }
   | { status: "invalid_env"; field: "username" | "password" }
-  | { status: "mismatch" }
+  | { status: "mismatch"; mismatch: AdminMismatchHint }
   | { status: "ok"; username: string };
+
+/**
+ * Describes *how* the submitted credentials differ from the runtime ones,
+ * without ever echoing a secret back.
+ *
+ * `passwordLength` is only reported once the username matched, so probing
+ * random usernames cannot fingerprint the password.
+ */
+export type AdminMismatchHint = {
+  usernameMatches: boolean;
+  passwordLength: number | null;
+  passwordHasEdgeWhitespace: boolean;
+};
 
 /** What `ensureAdminAccount` did to the database. */
 export type AdminSyncOutcome = "skipped" | "in_sync" | "created" | "rotated";
+
+/** Shape of the `ADMIN_USERNAME` / `ADMIN_PASSWORD` runtime variables. */
+export type AdminEnvSummary = {
+  usernameSet: boolean;
+  passwordSet: boolean;
+  usernameValid: boolean;
+  passwordLength: number;
+  passwordHasEdgeWhitespace: boolean;
+};
+
+/** State of the administrator row inside the database. */
+export type AdminAccountReport = {
+  configured: boolean;
+  emailExists: boolean;
+  role: string | null;
+  emailVerified: boolean;
+  hasCredential: boolean;
+  /** `null` when there is no runtime password to compare against. */
+  credentialMatchesEnv: boolean | null;
+};
+
+function hasEdgeWhitespace(value: string): boolean {
+  return value.length > 0 && value !== value.trim();
+}
+
+/**
+ * Loudly reports — without secrets — how the runtime variables are shaped.
+ *
+ * A pasted password that kept a trailing newline, or a username that lost its
+ * casing, cannot be spotted any other way: Cloudflare's UI shows the value but
+ * you cannot tell a trailing space from the cursor.
+ */
+export function describeEnvAdminCredentials(env: Env): AdminEnvSummary {
+  const username = env.ADMIN_USERNAME?.trim() ?? "";
+  const password = env.ADMIN_PASSWORD ?? "";
+
+  return {
+    usernameSet: username.length > 0,
+    passwordSet: password.length > 0,
+    usernameValid: ADMIN_CONSOLE_USERNAME_PATTERN.test(username),
+    passwordLength: password.length,
+    passwordHasEdgeWhitespace: hasEdgeWhitespace(password),
+  };
+}
 
 /**
  * Compares the credentials typed into `/console` against the runtime
@@ -59,11 +116,98 @@ export function checkEnvAdminCredentials(
 
   const sameUsername =
     username.toLowerCase() === input.username.trim().toLowerCase();
-  if (!sameUsername || password !== input.password) {
-    return { status: "mismatch" };
+
+  if (!sameUsername) {
+    return {
+      status: "mismatch",
+      mismatch: {
+        usernameMatches: false,
+        passwordLength: null,
+        passwordHasEdgeWhitespace: false,
+      },
+    };
+  }
+
+  if (password !== input.password) {
+    return {
+      status: "mismatch",
+      mismatch: {
+        usernameMatches: true,
+        passwordLength: password.length,
+        passwordHasEdgeWhitespace: hasEdgeWhitespace(password),
+      },
+    };
   }
 
   return { status: "ok", username };
+}
+
+/**
+ * Read-only counterpart of `ensureAdminAccount`: reports what the database
+ * currently holds for the configured administrator, so `/api/console-login`
+ * can answer "is the account even there, and does its stored password hash
+ * match the runtime variable?" without mutating anything.
+ */
+export async function describeAdminAccount(
+  env: Env,
+  db: DB,
+): Promise<AdminAccountReport> {
+  const summary = describeEnvAdminCredentials(env);
+  const report: AdminAccountReport = {
+    configured: summary.usernameSet && summary.passwordSet,
+    emailExists: false,
+    role: null,
+    emailVerified: false,
+    hasCredential: false,
+    credentialMatchesEnv: null,
+  };
+
+  if (!summary.usernameSet) return report;
+
+  const email = adminConsoleEmail(
+    env.ADMIN_USERNAME?.trim() ?? "",
+    serverEnv(env).DOMAIN,
+  );
+
+  const rows = await db
+    .select({
+      id: user.id,
+      role: user.role,
+      emailVerified: user.emailVerified,
+    })
+    .from(user)
+    .where(eq(user.email, email))
+    .limit(1);
+
+  const found = rows[0];
+  if (!found) return report;
+
+  report.emailExists = true;
+  report.role = found.role;
+  report.emailVerified = Boolean(found.emailVerified);
+
+  const credentials = await db
+    .select({ password: account.password })
+    .from(account)
+    .where(
+      and(
+        eq(account.userId, found.id),
+        eq(account.providerId, CREDENTIAL_PROVIDER),
+      ),
+    )
+    .limit(1);
+
+  const storedHash = credentials[0]?.password;
+  if (!storedHash) return report;
+
+  report.hasCredential = true;
+  report.credentialMatchesEnv = summary.passwordSet
+    ? await verifyPassword(storedHash, env.ADMIN_PASSWORD ?? "").catch(
+        () => false,
+      )
+    : null;
+
+  return report;
 }
 
 /**

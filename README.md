@@ -198,11 +198,21 @@
 Worker 首次收到请求时会自动创建该账号（邮箱已验证 + `admin` 角色），随后打开
 `https://你的域名/console`，用 `ADMIN_USERNAME` / `ADMIN_PASSWORD` 登录即可进入 `/admin`。
 
-> 兜底逻辑：`/console` 每次提交登录前都会请求 `/api/console-login` 做一次前置检查。
-> 只要填写的用户名 + 口令与运行期变量一致，它就会**幂等补齐**账号（账号被删、D1 换库、
-> 或 `DOMAIN` 改过导致内部邮箱变化，都会自动重建/迁移），再交给 better-auth 正常登录；
-> 凭据不一致时则会明确告诉你是「变量没生效」还是「口令打错」，不会再只报一句
-> 「用户名或口令不正确」。
+- **用户名不要求叫 `admin`**：`ADMIN_USERNAME` 可以是任意 3–32 位字母 / 数字 / `.` / `-` / `_`；
+  `/console` 只要求你填的和 `ADMIN_USERNAME` 一致（不区分大小写）。角色由系统自动设为 `admin`，
+  与用户名本身无关。
+
+> **登录是怎么完成的**：`/console` 提交时把用户名 + 口令交给 `/api/console-login`，
+> 由 Worker **在服务端**完成校验与登录（口令只与运行期变量比对），再把会话 Cookie 下发浏览器。
+> 这样做有两个好处：
+>
+> 1. **正确口令不会因为环境问题被误判**。浏览器直连的 `/api/auth/sign-in/email` 有三道隐形门槛，
+>    任何一道都会把「口令正确」表现成「口令错误」：按 IP 限流（5 次/分、10 次/时）、
+>    配置了 `TURNSTILE_SECRET_KEY` 时强制要求人机校验令牌（后台页面无法提供）、
+>    以及 better-auth 的 `Origin` 校验（默认只信 `BETTER_AUTH_URL`，用别的域名访问就报 `INVALID_ORIGIN`）。
+> 2. **账号会自动补齐**。只要填写的用户名 + 口令与运行期变量一致，就会先**幂等补齐**账号
+>    （账号被删、D1 换库、`DOMAIN` 改过导致内部邮箱变化，都会自动重建/迁移），再登录；
+>    改过 `ADMIN_PASSWORD` 也会自动轮换并使旧会话失效。
 
 > **为什么需要这条路径**：常规注册 `/register` 要求邮箱验证，而未配置邮件服务时验证邮件发不出去，
 > 首个管理员就永远创建不出来。环境变量引导绕开了这个死结，**不需要任何邮件配置**。
@@ -211,19 +221,33 @@ Worker 首次收到请求时会自动创建该账号（邮箱已验证 + `admin`
 - 两者都**不设置**时功能完全静默（不访问数据库）；只设置了其中一个会在日志里告警并跳过。
 - 用户名或口令不合规时同样只告警、不影响站点正常运行。
 
-> **`/console` 提示「用户名或口令不正确」怎么排查**：
-> 0. **先看登录框自己给的提示**：提交时会先请求 `/api/console-login` 做前置检查，它会把「变量没生效」和「口令打错」区分开：
->    - 「后台未启用：ADMIN_USERNAME / ADMIN_PASSWORD 未在当前部署生效」→ 变量没进运行期：确认加在 **变量和机密**（不是构建变量），并且保存后点了 **部署**；
->    - 「后台变量格式不正确」→ 用户名须 3–32 位字母 / 数字 / `.` / `-` / `_`，口令至少 8 位；
->    - 「尝试过于频繁」→ 同一 IP 10 分钟内超过 20 次，稍后再试；
->    - 仍显示「用户名或口令不正确」→ 变量已生效、账号也已自动补齐，那就是口令确实不一致（例如该账号是走 `/register` 另建的、口令与变量不同）。
-> 1. 变量是否添加在 **变量和机密** 里，且是否点了 **保存并部署**（改运行期变量必须部署新版本才生效）；
-> 2. **D1 数据表是否已建**——自动创建管理员需要 `user` / `account` 表存在。若构建日志里 `[db:migrate]` 显示「未检测到有效的 D1 绑定…已跳过」，说明 D1 绑定没进 `wrangler.jsonc`，请把 `D1_DATABASE_ID` 放进 **构建变量 Build variables** 后重跑构建；
-> 3. 到 Worker 的 **Logs（实时日志）** 里看关键字：
->    - `[admin-bootstrap] created admin account` / `admin account synced` → 账号已建；
->    - better-auth 自己的告警可直接定性：`User not found`（该邮箱不存在 → 变量未生效，或建号时的 `DOMAIN` 与当前不一致）、`Credential account not found`、`Invalid password`（口令不一致）、`EMAIL_NOT_VERIFIED`；
+> **一条 URL 看懂部署状态**：浏览器直接打开 `https://你的域名/api/console-login`（GET），
+> 会返回一份不含口令的自检报告：
+>
+> | 字段 | 含义 |
+> | --- | --- |
+> | `build` | 当前部署的版本标记（`console-login/2`）。**看不到该字段 = 部署仍是旧版本** |
+> | `env` | 运行期变量的形态：是否设置、用户名是否合法、**口令长度**、口令**首尾是否含空白** |
+> | `envError` | 运行期变量不合法时的具体报错（例如缺 `BETTER_AUTH_SECRET`） |
+> | `auth.baseUrl` / `requestOrigin` / `originTrusted` | `BETTER_AUTH_URL` 与当前访问域名是否一致；`originTrusted: false` 会让浏览器直连登录一律失败 |
+> | `auth.turnstileEnabled` | 为 `true` 时，浏览器直连的登录路径必然报「缺少人机校验令牌」 |
+> | `account` | 账号是否已存在、`role`、`email_verified`、是否有 `credential` 记录、**存量哈希是否与当前变量一致** |
+> | `accountError` | 查库失败的原因（例如 D1 没建表） |
+
+> **`/console` 登录失败怎么排查**（提示语已按原因区分，不再只有一句「用户名或口令不正确」）：
+> 1. 「后台未启用：ADMIN_USERNAME / ADMIN_PASSWORD 未在当前部署生效」→ 变量没进运行期：确认加在 **变量和机密**（不是构建变量），并且保存后点了 **部署**；
+> 2. 「后台变量格式不正确」→ 用户名须 3–32 位字母 / 数字 / `.` / `-` / `_`，口令至少 8 位；
+> 3. 「用户名与变量 ADMIN_USERNAME 不一致」/「口令与变量 ADMIN_PASSWORD 不一致（服务器实际读到的口令长度为 N…，且首尾含空白字符）」→ 按提示对齐 **变量和机密** 里的值；
+>    出现「首尾含空白」几乎都是粘贴时带上了换行或空格，删掉变量里的首尾空白后重新部署即可；
+> 4. 「尝试过于频繁已被临时限流」→ 同 IP 10 分钟 20 次；等一会儿或换网络再试；
+> 5. 「站点启用了人机校验（Turnstile）…」→ 删掉 `TURNSTILE_SECRET_KEY` 后重新部署（后台登录页无法提供令牌）；
+> 6. 「创建管理员账号失败：…」→ 多数是 **D1 数据表没建**。若构建日志里 `[db:migrate]` 显示「未检测到有效的 D1 绑定…已跳过」，请把 `D1_DATABASE_ID` 放进 **构建变量 Build variables** 后重跑构建；
+> 7. 「变量本身正确，但登录仍被拒绝：<错误码>」→ 服务端登录已成功校验变量，此时后面附的错误码就是 better-auth 的原始原因（如 `EMAIL_NOT_VERIFIED`、`INVALID_ORIGIN`），照码排查即可。
+> 8. 还想更快：打开上面的 `GET /api/console-login`，`account.emailExists` / `credentialMatchesEnv` / `auth.originTrusted` 三个布尔值基本就能定性。
+> 9. 到 Worker 的 **Logs（实时日志）** 里看关键字：
+>    - `[admin-bootstrap] created admin account` / `admin account synced` / `rotated admin password` → 账号状态；
 >    - 完全看不到 `[admin-bootstrap]` → 当前部署的版本早于该功能（用「重试构建」只会重建**旧提交**，请对**最新提交**重新触发构建）。
-> 4. 还不行就直接查库：D1 → 数据库 → **Console**，粘贴 SQL（不是文件名）：
+> 10. 还不行就直接查库：D1 → 数据库 → **Console**，粘贴 SQL（不是文件名）：
 >    ```sql
 >    SELECT id, name, email, role, email_verified FROM user;
 >    SELECT user_id, provider_id, length(password) FROM account;
@@ -231,6 +255,8 @@ Worker 首次收到请求时会自动创建该账号（邮箱已验证 + `admin`
 >    正常应看到 `你的用户名@console.<DOMAIN>` 一行，`role = admin`、`email_verified = 1`，且 `account` 里有对应 `credential` 记录。
 >
 > 另外，登录页 `/login` 是否显示 GitHub 按钮取决于 `GITHUB_CLIENT_ID/SECRET` 是否配置——**它和 `/console` 是两套独立入口**，没配 GitHub 也不影响用用户名 + 口令进后台。
+> `/login` 走的是浏览器直连的 `/api/auth/sign-in/email`，因此上面的限流、Turnstile、`originTrusted` 三条对它有影响；
+> `/console` 走服务端通道，不受这三条影响。
 
 **方式 B：邮箱注册（需要已配置邮件服务）**
 

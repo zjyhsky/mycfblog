@@ -33,6 +33,7 @@ export function getAuth({ db, env }: { db: DB; env: Env }) {
   const {
     BETTER_AUTH_SECRET,
     BETTER_AUTH_URL,
+    DOMAIN,
     LOCALE,
     GITHUB_CLIENT_ID,
     GITHUB_CLIENT_SECRET,
@@ -40,6 +41,17 @@ export function getAuth({ db, env }: { db: DB; env: Env }) {
 
   return betterAuth({
     ...createAuthConfig(),
+    // better-auth validates the browser `Origin` against these as soon as a
+    // request carries a cookie, and defaults to `BETTER_AUTH_URL` alone. That
+    // default silently rejects every sign-in as soon as the site is opened on
+    // a domain other than the one in `BETTER_AUTH_URL` (a workers.dev URL
+    // while a custom domain is configured, or the other way round), so the
+    // site's own domain is trusted explicitly.
+    trustedOrigins: [
+      BETTER_AUTH_URL,
+      `https://${DOMAIN}`,
+      `https://www.${DOMAIN}`,
+    ],
     // 仅在凭据齐全时注册 GitHub provider：否则按钮点了必然失败，
     // 前端会依据 getSocialProviders() 隐藏该入口。
     ...(GITHUB_CLIENT_ID && GITHUB_CLIENT_SECRET

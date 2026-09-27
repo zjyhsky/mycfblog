@@ -1,109 +1,26 @@
-import { readFileSync, readdirSync } from "node:fs";
-import path from "node:path";
 import { verifyPassword } from "@better-auth/utils/password";
-import { drizzle } from "drizzle-orm/sqlite-proxy";
 import { describe, expect, test } from "vitest";
 import {
+  createHarness,
+  describeWithSqlite,
+  makeEnv,
+} from "@/features/admin-console/service/admin-test-harness";
+import {
   checkEnvAdminCredentials,
+  describeAdminAccount,
+  describeEnvAdminCredentials,
   ensureAdminAccount,
 } from "@/features/admin-console/service/admin-bootstrap";
-import type { DB } from "@/lib/db";
-import * as schema from "@/lib/db/schema";
 
 /**
  * Runs the real bootstrap against a real SQLite database built from the real
  * migrations — no mocks — so the provisioned credentials can be checked with
  * better-auth's own password verifier.
  *
- * Node's `node:sqlite` is still flagged on Node 22 (`--experimental-sqlite`);
- * where the runtime cannot load it the suite skips instead of failing.
- */
-type SqliteCtor = typeof import("node:sqlite").DatabaseSync;
-
-const MIGRATIONS_DIR = path.join(process.cwd(), "migrations");
-
-async function loadSqlite(): Promise<SqliteCtor | null> {
-  try {
-    const module = await import("node:sqlite");
-    return module.DatabaseSync;
-  } catch {
-    return null;
-  }
-}
-
-const Sqlite = await loadSqlite();
-const describeWithSqlite = Sqlite ? describe : describe.skip;
-
-type Harness = {
-  db: DB;
-  all: <T>(sql: string) => T[];
-  exec: (sql: string) => void;
-};
-
-type Row = Record<string, unknown> | unknown[];
-
-/**
  * `system_config` is intentionally left empty: the cosmetic `/console` flag
  * sync then logs a caught error, which is exactly what the bootstrap is
  * expected to survive. The assertions below only cover account provisioning.
  */
-
-function createHarness(): Harness {
-  const Constructor = Sqlite as SqliteCtor;
-  const sqlite = new Constructor(":memory:");
-
-  for (const file of readdirSync(MIGRATIONS_DIR).sort()) {
-    if (!file.endsWith(".sql")) continue;
-    const sql = readFileSync(path.join(MIGRATIONS_DIR, file), "utf8");
-    try {
-      sqlite.exec(sql);
-    } catch (error) {
-      // FTS-only migrations are irrelevant to the auth tables.
-      if (!/fts/i.test(sql)) throw error;
-    }
-  }
-
-  const client = drizzle(
-    async (sql, params, method) => {
-      const values = Array.isArray(params) ? params : Object.values(params);
-      const statement = sqlite.prepare(sql);
-
-      // Each method must execute the statement exactly once.
-      if (method === "run") {
-        statement.run(...values);
-        return { rows: [] };
-      }
-
-      // drizzle maps rows positionally, like D1's `.raw()` output.
-      const usesArrayRows = typeof statement.setReturnArrays === "function";
-      if (usesArrayRows) statement.setReturnArrays(true);
-
-      const rows = statement.all(...values) as unknown as Row[];
-      return {
-        rows: usesArrayRows
-          ? rows
-          : rows.map((row) => (Array.isArray(row) ? row : Object.values(row))),
-      };
-    },
-    { schema },
-  );
-
-  return {
-    db: client as unknown as DB,
-    all: <T>(sql: string) => sqlite.prepare(sql).all() as T[],
-    exec: (sql: string) => sqlite.exec(sql),
-  };
-}
-
-function makeEnv(overrides: Record<string, string> = {}): Env {
-  return {
-    DOMAIN: "example.com",
-    BETTER_AUTH_SECRET: "test-secret-value",
-    BETTER_AUTH_URL: "https://example.com",
-    ...overrides,
-  } as unknown as Env;
-}
-
 const configuredEnv = makeEnv({
   ADMIN_USERNAME: "zjyhsky",
   ADMIN_PASSWORD: "Passw0rd123",
@@ -145,19 +62,56 @@ describe("checkEnvAdminCredentials", () => {
   });
 
   test("rejects a wrong username or password as mismatch", () => {
+    // The password length is only disclosed once the username matched, so
+    // probing random usernames cannot fingerprint the configured password.
     expect(
       checkEnvAdminCredentials(configuredEnv, {
         username: "someone-else",
         password: "Passw0rd123",
       }),
-    ).toEqual({ status: "mismatch" });
+    ).toMatchObject({
+      status: "mismatch",
+      mismatch: {
+        usernameMatches: false,
+        passwordLength: null,
+        passwordHasEdgeWhitespace: false,
+      },
+    });
 
     expect(
       checkEnvAdminCredentials(configuredEnv, {
         username: "zjyhsky",
         password: "Wrong0rd123",
       }),
-    ).toEqual({ status: "mismatch" });
+    ).toMatchObject({
+      status: "mismatch",
+      mismatch: {
+        usernameMatches: true,
+        passwordLength: "Passw0rd123".length,
+        passwordHasEdgeWhitespace: false,
+      },
+    });
+  });
+
+  test("flags a password that kept whitespace from a paste", () => {
+    const padded = makeEnv({
+      ADMIN_USERNAME: "zjyhsky",
+      ADMIN_PASSWORD: "Passw0rd123\n",
+    });
+
+    expect(
+      checkEnvAdminCredentials(padded, {
+        username: "zjyhsky",
+        password: "Passw0rd123",
+      }),
+    ).toMatchObject({
+      status: "mismatch",
+      mismatch: {
+        usernameMatches: true,
+        passwordLength: 12,
+        passwordHasEdgeWhitespace: true,
+      },
+    });
   });
 
   test("accepts the configured credentials, ignoring username case", () => {
@@ -167,6 +121,90 @@ describe("checkEnvAdminCredentials", () => {
         password: "Passw0rd123",
       }),
     ).toEqual({ status: "ok", username: "zjyhsky" });
+  });
+});
+
+describe("describeEnvAdminCredentials", () => {
+  test("reports unset variables", () => {
+    expect(describeEnvAdminCredentials(makeEnv())).toEqual({
+      usernameSet: false,
+      passwordSet: false,
+      usernameValid: false,
+      passwordLength: 0,
+      passwordHasEdgeWhitespace: false,
+    });
+  });
+
+  test("reports shape and pasted whitespace without echoing secrets", () => {
+    const summary = describeEnvAdminCredentials(
+      makeEnv({
+        ADMIN_USERNAME: " zjyhsky ",
+        ADMIN_PASSWORD: "Passw0rd123 ",
+      }),
+    );
+
+    expect(summary).toEqual({
+      usernameSet: true,
+      passwordSet: true,
+      usernameValid: true,
+      passwordLength: 12,
+      passwordHasEdgeWhitespace: true,
+    });
+    expect(JSON.stringify(summary)).not.toContain("Passw0rd123");
+  });
+});
+
+describeWithSqlite("describeAdminAccount", () => {
+  test("reports an unconfigured deployment without touching the database", async () => {
+    const harness = createHarness();
+    expect(await describeAdminAccount(makeEnv(), harness.db)).toEqual({
+      configured: false,
+      emailExists: false,
+      role: null,
+      emailVerified: false,
+      hasCredential: false,
+      credentialMatchesEnv: null,
+    });
+  });
+
+  test("reports a configured deployment whose account is missing", async () => {
+    const harness = createHarness();
+    expect(await describeAdminAccount(configuredEnv, harness.db)).toEqual({
+      configured: true,
+      emailExists: false,
+      role: null,
+      emailVerified: false,
+      hasCredential: false,
+      credentialMatchesEnv: null,
+    });
+  });
+
+  test("reports a healthy account whose hash matches the variable", async () => {
+    const harness = createHarness();
+    await ensureAdminAccount(configuredEnv, harness.db);
+
+    expect(await describeAdminAccount(configuredEnv, harness.db)).toEqual({
+      configured: true,
+      emailExists: true,
+      role: "admin",
+      emailVerified: true,
+      hasCredential: true,
+      credentialMatchesEnv: true,
+    });
+  });
+
+  test("reports a drifted hash when the Cloudflare password changed", async () => {
+    const harness = createHarness();
+    await ensureAdminAccount(configuredEnv, harness.db);
+
+    const moved = makeEnv({
+      ADMIN_USERNAME: "zjyhsky",
+      ADMIN_PASSWORD: "Rotated0rd123",
+    });
+    const report = await describeAdminAccount(moved, harness.db);
+
+    expect(report.emailExists).toBe(true);
+    expect(report.credentialMatchesEnv).toBe(false);
   });
 });
 

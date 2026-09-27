@@ -4,7 +4,6 @@ import { useState } from "react";
 import { adminConsoleEmail } from "@/features/admin-console/admin-console.utils";
 import { sessionQuery } from "@/features/auth/queries";
 import { siteDomainQuery } from "@/features/config/queries";
-import { authClient } from "@/lib/auth/auth.client";
 import { CACHE_CONTROL } from "@/lib/constants";
 import { m } from "@/paraglide/messages";
 
@@ -19,55 +18,127 @@ export const Route = createFileRoute("/console")({
   component: ConsolePage,
 });
 
-type LoginPreflight =
-  | { ok: true; outcome: string }
-  | { ok: false; reason: string; detail?: string };
+type LoginFailure = {
+  ok: false;
+  reason: string;
+  detail?: string;
+  mismatch?: {
+    usernameMatches?: boolean;
+    passwordLength?: number | null;
+    passwordHasEdgeWhitespace?: boolean;
+  };
+};
+
+type LoginSuccess = { ok: true; outcome: string; email: string };
 
 /**
- * Asks the server why a sign-in would fail before trying it.
+ * Signs in through the Worker instead of the browser-facing auth endpoint.
  *
- * better-auth can only report "incorrect username or password", which hides
- * the usual first-login problem: the runtime variables were never live in this
- * deployment. The pre-flight also (re)provisions the account when the
- * submitted credentials match the runtime ones.
+ * better-auth can only answer "incorrect username or password", which hides the
+ * usual first-login causes: the runtime variables were never live in this
+ * deployment, the public endpoint is rate limited (5/min, 10/h), or
+ * `BETTER_AUTH_URL` does not match the domain being browsed. The endpoint
+ * resolves the credentials server-side — repairing the account on the way —
+ * and answers with the real reason.
+ *
+ * Returns `null` when the endpoint itself is unreachable (e.g. an older
+ * deployment), so the caller can fall back to the plain sign-in.
  */
-async function preflight(
+async function loginViaServer(
   username: string,
   password: string,
-): Promise<LoginPreflight | null> {
+): Promise<LoginSuccess | LoginFailure | null> {
   try {
     const response = await fetch("/api/console-login", {
       method: "POST",
       headers: { "content-type": "application/json" },
+      credentials: "include",
       body: JSON.stringify({ username, password }),
     });
-    return (await response.json()) as LoginPreflight;
+
+    const body: unknown = await response.json();
+    if (typeof body !== "object" || body === null) return null;
+
+    return body as LoginSuccess | LoginFailure;
   } catch {
-    // Never block the real sign-in on a pre-flight failure.
     return null;
   }
 }
 
-/** `null` means "carry on with the normal sign-in". */
-function preflightError(result: LoginPreflight | null): string | null {
-  if (!result || result.ok) return null;
+/** Last-resort path: the raw public endpoint, with its error codes kept. */
+async function loginDirectly(
+  username: string,
+  password: string,
+  domain: string,
+): Promise<string | null> {
+  try {
+    const response = await fetch("/api/auth/sign-in/email", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({
+        email: adminConsoleEmail(username, domain),
+        password,
+      }),
+    });
 
-  switch (result.reason) {
+    if (response.ok) return null;
+
+    const body = (await response.json().catch(() => null)) as {
+      code?: string;
+      message?: string;
+    } | null;
+    const code = body?.code ?? `HTTP ${response.status}`;
+    const detail = [code, body?.message].filter(Boolean).join(" — ");
+
+    if (response.status === 429 || code === "RATE_LIMITED") {
+      return m.console_err_rate_limited();
+    }
+    if (code.startsWith("TURNSTILE")) {
+      return m.console_err_turnstile();
+    }
+    return m.console_err_signin_failed({ detail });
+  } catch (error) {
+    return m.console_err_signin_failed({
+      detail: error instanceof Error ? error.message : String(error),
+    });
+  }
+}
+
+/** Turns a failure reason into an actionable, localised message. */
+function failureMessage(failure: LoginFailure): string {
+  switch (failure.reason) {
     case "NOT_CONFIGURED": {
       return m.console_err_not_configured();
     }
     case "INVALID_ENV": {
       return m.console_err_invalid_env();
     }
+    case "RATE_LIMITED": {
+      return m.console_err_rate_limited();
+    }
     case "PROVISION_FAILED": {
-      return m.console_err_provision_failed({
-        detail: result.detail ?? "",
+      return m.console_err_provision_failed({ detail: failure.detail ?? "" });
+    }
+    case "SIGNIN_FAILED": {
+      return m.console_err_signin_failed({ detail: failure.detail ?? "" });
+    }
+    case "ENV_MISMATCH": {
+      if (failure.mismatch?.usernameMatches === false) {
+        return m.console_err_username_mismatch();
+      }
+      const length = failure.mismatch?.passwordLength;
+      return m.console_err_password_mismatch({
+        length: typeof length === "number" ? String(length) : "?",
+        whitespace: failure.mismatch?.passwordHasEdgeWhitespace
+          ? m.console_err_password_whitespace()
+          : "",
       });
     }
     default: {
-      // BAD_CREDENTIALS / RATE_LIMITED: an account created through /register
-      // may still have a different password, so let better-auth decide.
-      return null;
+      return m.console_err_signin_failed({
+        detail: failure.reason || "unknown",
+      });
     }
   }
 }
@@ -89,22 +160,21 @@ function ConsolePage() {
     setPending(true);
     setError(null);
 
-    const blocked = preflightError(await preflight(name, password));
-    if (blocked) {
-      setError(blocked);
+    const result = await loginViaServer(name, password);
+
+    if (result && !result.ok) {
+      setError(failureMessage(result));
       setPending(false);
       return;
     }
 
-    const result = await authClient.signIn.email({
-      email: adminConsoleEmail(name, domain),
-      password,
-    });
-
-    if (result.error) {
-      setError(m.console_failed());
-      setPending(false);
-      return;
+    if (!result) {
+      const failure = await loginDirectly(name, password, domain);
+      if (failure) {
+        setError(failure);
+        setPending(false);
+        return;
+      }
     }
 
     await queryClient.invalidateQueries({ queryKey: sessionQuery.queryKey });
