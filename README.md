@@ -79,7 +79,7 @@
 
 > **关于 `bun.lock`**：已在仓库中且被跟踪，会随推送上传，这是 `--frozen-lockfile` 构建所需。若你本地改过 `package.json` 依赖，记得本地 `bun install` 刷新它后再推。
 >
-> **网页端上传方式**：GitHub 网页端「Add file → Upload files」直接把整个项目文件夹拖进去即可；或用 GitHub Desktop。
+> **上传方式**：推荐用 **GitHub Desktop**（图形界面，自动遵守 `.gitignore`，不会误传密钥）或 `git push` 推送。⚠️ 注意：GitHub 网页端「Upload files」**不会**读取 `.gitignore`——若本地存在真实 `.env` / `.dev.vars`，请勿用网页拖拽整个文件夹，以免把密钥传上 GitHub。当前仓库已通过 `git` 提交，密钥文件均未被跟踪，可放心推送。
 
 ---
 
