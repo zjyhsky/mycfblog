@@ -198,7 +198,7 @@ async function syncAdminConsoleFlag(db: DB, username: string): Promise<void> {
   const next: SystemConfig = {
     ...current,
     site: {
-      ...(current.site ?? {}),
+      ...current.site,
       adminConsole: { username, enabled: true },
     },
   };
