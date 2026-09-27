@@ -112,14 +112,16 @@
 1. 左侧「Workers 与 Pages」→「创建」→ 选 **Worker** → 点击「**通过 Git 部署 / Deploy from Git**」。
 2. 授权 GitHub 并选择你的仓库与分支（如 `main`）。
 3. 进入构建配置，逐项填写：
-   - **Worker 名称**：如 `my-blog`（与后面的 `WORKER_NAME` 一致）。
-   - **构建命令（Build command）**填入下面这一整行（云端会：装依赖 → 用资源 ID 生成 `wrangler.jsonc` → 构建前端/SSR → 对线上 D1 执行迁移建表）：
+   - **Worker 名称**：如 `my-blog`（与后面的 `WORKER_NAME` 一致；不填也行，脚本会用 `flare-stack-blog` 兜底）。
+   - **构建命令（Build command）**填入下面这一整行（云端会：装依赖 → 用资源 ID 生成 `wrangler.jsonc` → 构建前端/SSR）：
      ```
-     bun install && bun run wrangler:prepare && bun run build && bun db:migrate
+     bun install && bun run wrangler:prepare && bun run build
      ```
+     > ✅ **变量不是必填**：`wrangler:prepare` 已改为容错模式——任一变量缺失时只会**从 `wrangler.jsonc` 省略对应绑定并给出告警**，不会中断构建。因此**不填任何变量也能先构建并部署成功**（Worker 默认发布到 `*.workers.dev`，功能随后补齐）。
    - **部署命令（Deploy command）**：填 `wrangler deploy`（默认即此，可显式写出）。
-4. 展开「环境变量 / 构建变量」与下方的「变量和机密」，按下文**环境变量速查表**逐项填写（A 类填构建变量，B 类填运行期变量，C 类填机密）。
-5. 点击「保存并部署 / Deploy」。控制台会拉取代码、按上面命令构建并发布。首次部署会依据 `DOMAIN` 自动在你的 zone 下添加**自定义域**并申请 SSL 证书（可能需在「设置 → 自定义域」里确认一次证书状态）。
+4. 展开「环境变量 / 构建变量」与下方的「变量和机密」，按下文**环境变量速查表**逐项填写（A 类填构建变量，B 类填运行期变量，C 类填机密）。**首次部署可先不填**，等构建通过后再补。
+5. 点击「保存并部署 / Deploy」。控制台会拉取代码、按上面命令构建并发布。此时即使没填 `DOMAIN`，也会先部署到默认 `*.workers.dev` 子域（功能受限）。
+6. **（后续）配置资源并补全功能**：在 Cloudflare 控制台创建 D1/R2/KV/Queue（见步骤 1）后，到 Worker「设置 → 变量和机密」补齐 A 类运行期变量与 B/C 类变量，再到控制台 **Terminal**（或本地）执行一次建表迁移 `bun db:migrate`（即 `wrangler d1 migrations apply DB --remote`），最后重新部署即可启用完整功能 + 自定义域。
 
 ### 步骤 4 ·（可选）确认 D1 表已建立
 
@@ -134,9 +136,11 @@
 
 ### 环境变量速查表（三类的填写要点）
 
-> ⚠️ **关键提醒**：`DOMAIN` 必须填两次——一次在 **A 类构建变量**（给 `wrangler:prepare` 填路由），一次在 **B 类运行期变量**（给 Worker 运行时校验）。**构建变量不会自动注入运行时**，只填一处会导致 Worker 启动即报 `Invalid environment variables` 崩溃。
+> ⚠️ **关键提醒**（配置完整功能时）：`DOMAIN` 必须填两次——一次在 **A 类构建变量**（给 `wrangler:prepare` 填路由），一次在 **B 类运行期变量**（给 Worker 运行时校验）。**构建变量不会自动注入运行时**，只填一处会导致 Worker 启动即报 `Invalid environment variables` 崩溃。（首次「先部署后配置」可先不填，Worker 会发布到默认 `*.workers.dev`。）
 
-**A 类 · 构建变量（Workers Builds → 构建变量，明文，仅构建期）** — 云端 `wrangler:prepare` 读取它们生成 `wrangler.jsonc`：
+**A 类 · 构建变量（Workers Builds → 构建变量，明文，仅构建期）** — 云端 `wrangler:prepare` 读取它们生成 `wrangler.jsonc`。
+
+> ✅ **首次部署可全部留空**：`wrangler:prepare` 已改为容错模式，缺失的变量只会让对应绑定被省略（并打告警），**不再中断构建**。即不填任何 A 类变量也能先构建 + 部署到 `*.workers.dev`。等资源建好后填回并重新部署，即可启用对应功能与自定义域。
 
 | 变量名 | 填什么 |
 | :--- | :--- |
@@ -282,20 +286,23 @@ git push
 
 ### 错误 2：`Missing required environment variable: XXX`
 
-**完整报错**（出现在「正在构建」阶段，`bun run wrangler:prepare` 时）：
+> [!NOTE]
+> 自本版起 `scripts/prepare-wrangler-config.ts` 已改为**容错模式**：缺失变量只会在生成 `wrangler.jsonc` 时省略对应绑定并打告警，**不再抛错中断构建**。因此正常情况下你不会再看这个报错。下面的内容仅在你需要"确保所有绑定都存在"时参考。
+
+**旧版完整报错**（出现在「正在构建」阶段，`bun run wrangler:prepare` 时）：
 
 ```
 error: Missing required environment variable: DOMAIN
 ```
 
-**原因**：`scripts/prepare-wrangler-config.ts` 需要 6 个变量才能生成 `wrangler.jsonc`，缺任意一个都会抛错。对应「[环境变量速查表](#环境变量速查表三类的填写要点)」中的 **A 类 · 构建变量**：
+**旧版原因**：旧脚本用 `requireEnv()` 强制要求 6 个变量才能生成 `wrangler.jsonc`，缺任意一个都会抛错。对应「[环境变量速查表](#环境变量速查表三类的填写要点)」中的 **A 类 · 构建变量**：
 
 `WORKER_NAME`、`QUEUE_NAME`、`DOMAIN`、`D1_DATABASE_ID`、`KV_NAMESPACE_ID`、`BUCKET_NAME`
 
-**修复**：Cloudflare 控制台 → 你的 Worker → **Settings（设置）→ Build（构建）→ Build variables（构建变量）**，把这 6 个逐一加上，然后点 **Retry build（重试构建）**。
+**如果你仍想强制补齐**（例如要确保自定义域与全部资源绑定都生成）：Cloudflare 控制台 → 你的 Worker → **Settings（设置）→ Build（构建）→ Build variables（构建变量）**，把这 6 个逐一加上，然后点 **Retry build（重试构建）**。
 
 > [!WARNING]
-> 构建变量**不会**自动注入 Worker 运行时。`DOMAIN` 除了填在这里，还必须到 **Settings → Variables and Secrets** 再填一遍（B 类运行期变量），否则 Worker 启动时会因缺少 `DOMAIN` 而崩溃。
+> 构建变量**不会**自动注入 Worker 运行时。`DOMAIN` 除了填在构建变量，还必须到 **Settings → Variables and Secrets** 再填一遍（B 类运行期变量），否则 Worker 启动时会因缺少 `DOMAIN` 而崩溃。
 
 ---
 
