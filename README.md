@@ -112,16 +112,16 @@
 1. 左侧「Workers 与 Pages」→「创建」→ 选 **Worker** → 点击「**通过 Git 部署 / Deploy from Git**」。
 2. 授权 GitHub 并选择你的仓库与分支（如 `main`）。
 3. 进入构建配置，逐项填写：
-   - **Worker 名称**：如 `my-blog`（与后面的 `WORKER_NAME` 一致；不填也行，脚本会用 `flare-stack-blog` 兜底）。
-   - **构建命令（Build command）**填入下面这一整行（云端会：装依赖 → 用资源 ID 生成 `wrangler.jsonc` → 构建前端/SSR）：
+   - **Worker 名称**：你在 CF 上的 Worker 名（如 `mycfblog`）。**它必须与构建变量 `WORKER_NAME` 完全一致**——Cloudflare Workers Builds 强校验二者相同，不一致会在部署阶段报 `The name in your wrangler.toml file must match the name of your Worker` 而失败。
+   - **构建命令（Build command）**填入下面这一整行（云端会：装依赖 → 用资源 ID 生成 `wrangler.jsonc` → 构建前端/SSR → 建表迁移）：
      ```
-     bun install && bun run wrangler:prepare && bun run build
+     bun install && bun run wrangler:prepare && bun run build && bun db:migrate
      ```
-     > ✅ **变量不是必填**：`wrangler:prepare` 已改为容错模式——任一变量缺失时只会**从 `wrangler.jsonc` 省略对应绑定并给出告警**，不会中断构建。因此**不填任何变量也能先构建并部署成功**（Worker 默认发布到 `*.workers.dev`，功能随后补齐）。
+     > ✅ **只有 `WORKER_NAME` 必填，其余都能留空**：`wrangler:prepare` 已改为容错模式——除 `WORKER_NAME` 外的变量缺失时只会**从 `wrangler.jsonc` 省略对应绑定并给告警**，不中断构建；`bun db:migrate` 也已容错，未配置 D1 时自动跳过迁移。因此**只需填一个 `WORKER_NAME`，就能先构建并部署成功**（Worker 发布到 `*.workers.dev`，其余功能随后补齐）。
    - **部署命令（Deploy command）**：填 `wrangler deploy`（默认即此，可显式写出）。
-4. 展开「环境变量 / 构建变量」与下方的「变量和机密」，按下文**环境变量速查表**逐项填写（A 类填构建变量，B 类填运行期变量，C 类填机密）。**首次部署可先不填**，等构建通过后再补。
+4. 展开「环境变量 / 构建变量」与下方的「变量和机密」，按下文**环境变量速查表**逐项填写（A 类填构建变量，B 类填运行期变量，C 类填机密）。**首次部署只需填 `WORKER_NAME` 一项**，其余等构建通过后再补。
 5. 点击「保存并部署 / Deploy」。控制台会拉取代码、按上面命令构建并发布。此时即使没填 `DOMAIN`，也会先部署到默认 `*.workers.dev` 子域（功能受限）。
-6. **（后续）配置资源并补全功能**：在 Cloudflare 控制台创建 D1/R2/KV/Queue（见步骤 1）后，到 Worker「设置 → 变量和机密」补齐 A 类运行期变量与 B/C 类变量，再到控制台 **Terminal**（或本地）执行一次建表迁移 `bun db:migrate`（即 `wrangler d1 migrations apply DB --remote`），最后重新部署即可启用完整功能 + 自定义域。
+6. **（后续）配置资源并补全功能**：在 Cloudflare 控制台创建 D1/R2/KV/Queue（见步骤 1）后，把 A/B/C 类变量补齐（构建变量 `D1_DATABASE_ID` 等 + 运行期变量），**再触发一次构建**——构建命令里的 `bun db:migrate` 会自动检测到 D1 并建表，随后部署即启用完整功能 + 自定义域。
 
 ### 步骤 4 ·（可选）确认 D1 表已建立
 
@@ -140,7 +140,9 @@
 
 **A 类 · 构建变量（Workers Builds → 构建变量，明文，仅构建期）** — 云端 `wrangler:prepare` 读取它们生成 `wrangler.jsonc`。
 
-> ✅ **首次部署可全部留空**：`wrangler:prepare` 已改为容错模式，缺失的变量只会让对应绑定被省略（并打告警），**不再中断构建**。即不填任何 A 类变量也能先构建 + 部署到 `*.workers.dev`。等资源建好后填回并重新部署，即可启用对应功能与自定义域。
+> ✅ **首次部署只需填 `WORKER_NAME`**：`wrangler:prepare` 已改为容错模式，除 `WORKER_NAME` 外的缺失变量只会让对应绑定被省略（并打告警），**不再中断构建**；`bun db:migrate` 也已容错，未配置 D1 时自动跳过迁移。因此**只填 `WORKER_NAME` 就能先构建 + 部署到 `*.workers.dev`**。等资源建好后填回并重新部署，即可启用对应功能与自定义域。
+>
+> ⛔ **`WORKER_NAME` 不可省略**：Cloudflare Workers Builds 要求 `wrangler.jsonc` 里的 `name` 与控制台 Worker 名**完全一致**，否则部署阶段报 `The name in your wrangler.toml file must match the name of your Worker`（详见第七章「错误 3」）。`DOMAIN` 才是真正可选的——不填则走 `*.workers.dev`。
 
 | 变量名 | 填什么 |
 | :--- | :--- |
@@ -287,7 +289,7 @@ git push
 ### 错误 2：`Missing required environment variable: XXX`
 
 > [!NOTE]
-> 自本版起 `scripts/prepare-wrangler-config.ts` 已改为**容错模式**：缺失变量只会在生成 `wrangler.jsonc` 时省略对应绑定并打告警，**不再抛错中断构建**。因此正常情况下你不会再看这个报错。下面的内容仅在你需要"确保所有绑定都存在"时参考。
+> 自本版起 `scripts/prepare-wrangler-config.ts` 已改为**容错模式**：除 `WORKER_NAME` 外的变量缺失只会在生成 `wrangler.jsonc` 时省略对应绑定并打告警，**不再抛错中断构建**。因此正常情况下你不会再看到这个报错。
 
 **旧版完整报错**（出现在「正在构建」阶段，`bun run wrangler:prepare` 时）：
 
@@ -295,14 +297,34 @@ git push
 error: Missing required environment variable: DOMAIN
 ```
 
-**旧版原因**：旧脚本用 `requireEnv()` 强制要求 6 个变量才能生成 `wrangler.jsonc`，缺任意一个都会抛错。对应「[环境变量速查表](#环境变量速查表三类的填写要点)」中的 **A 类 · 构建变量**：
+**旧版原因**：旧脚本用 `requireEnv()` 强制要求 6 个变量才能生成 `wrangler.jsonc`，缺任意一个都会抛错。
+
+**处理**：正常情况下无需处理。若你想确保自定义域与全部资源绑定都生成，可在 **Settings（设置）→ Build（构建）→ Build variables（构建变量）** 补齐：
 
 `WORKER_NAME`、`QUEUE_NAME`、`DOMAIN`、`D1_DATABASE_ID`、`KV_NAMESPACE_ID`、`BUCKET_NAME`
 
-**如果你仍想强制补齐**（例如要确保自定义域与全部资源绑定都生成）：Cloudflare 控制台 → 你的 Worker → **Settings（设置）→ Build（构建）→ Build variables（构建变量）**，把这 6 个逐一加上，然后点 **Retry build（重试构建）**。
-
 > [!WARNING]
 > 构建变量**不会**自动注入 Worker 运行时。`DOMAIN` 除了填在构建变量，还必须到 **Settings → Variables and Secrets** 再填一遍（B 类运行期变量），否则 Worker 启动时会因缺少 `DOMAIN` 而崩溃。
+
+---
+
+### 错误 3：`The name in your wrangler.toml file (X) must match the name of your Worker (Y)`
+
+**完整报错**（出现在「正在部署」阶段，`wrangler deploy` 时）：
+
+```
+✘ [ERROR] The name in your wrangler.toml file (flare-stack-blog) must match the name of your Worker (mycfblog).
+```
+
+**原因**：Cloudflare Workers Builds 要求 `wrangler.jsonc` 里的 `name` 与控制台 Worker 名**完全一致**（这是平台强校验，无法绕过）。本项目的 `name` 由构建变量 `WORKER_NAME` 生成；未设置时脚本回退为 `flare-stack-blog`，于是与你的 Worker 名（如 `mycfblog`）不一致 → 部署失败。
+
+**修复**：**Settings（设置）→ Build（构建）→ Build variables（构建变量）** 添加一项：
+
+```
+WORKER_NAME = 你的 Worker 名（如 mycfblog）
+```
+
+保存后重新触发一次构建即可。注意：控制台**不支持重命名已有 Worker**，所以务必让 `WORKER_NAME` 去匹配控制台的名字，而不是反过来。
 
 ---
 

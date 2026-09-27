@@ -171,12 +171,19 @@ export function prepareWranglerConfig(env: EnvMap) {
     !kvNamespaceId && "KV_NAMESPACE_ID",
     !bucketName && "BUCKET_NAME",
     !queueName && "QUEUE_NAME",
-    !env.WORKER_NAME?.trim() && "WORKER_NAME",
   ].filter(Boolean) as string[];
   if (missing.length) {
     console.warn(
       `[wrangler:prepare] 以下变量未设置，对应绑定已从 wrangler.jsonc 省略：` +
-        ` ${missing.join(", ")}。Worker 仍可部署（默认 *.workers.dev），但相关功能在配置前不可用。`,
+        ` ${missing.join(", ")}。Worker 仍可部署（无 DOMAIN 时落在 *.workers.dev），但相关功能在配置前不可用。`,
+    );
+  }
+  if (!env.WORKER_NAME?.trim()) {
+    console.warn(
+      `[wrangler:prepare] 未设置 WORKER_NAME，已回退为 "${workerName}"。` +
+        '注意：Cloudflare Workers Builds 要求 wrangler 配置里的 name 必须与控制台 Worker 名一致，' +
+        '否则部署阶段会报 "The name in your wrangler.toml file must match the name of your Worker"。' +
+        "请把 WORKER_NAME 设为你的 Worker 名。",
     );
   }
 
