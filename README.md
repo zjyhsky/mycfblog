@@ -118,7 +118,7 @@
      bun install && bun run wrangler:prepare && bun run build && bun db:migrate
      ```
      > ✅ **只有 `WORKER_NAME` 必填，其余都能留空**：`wrangler:prepare` 已改为容错模式——除 `WORKER_NAME` 外的变量缺失时只会**从 `wrangler.jsonc` 省略对应绑定并给告警**，不中断构建；`bun db:migrate` 也已容错，未配置 D1 时自动跳过迁移。因此**只需填一个 `WORKER_NAME`，就能先构建并部署成功**（Worker 发布到 `*.workers.dev`，其余功能随后补齐）。
-   - **部署命令（Deploy command）**：填 `wrangler deploy`（默认即此，可显式写出）。
+   - **部署命令（Deploy command）**：填 **`npx wrangler deploy`**。⚠️ **不要**只写 `wrangler deploy`——`wrangler` 是本项目的 devDependency，只存在于 `node_modules/.bin/`，**不在全局 PATH**；Cloudflare 的部署命令由 `/bin/sh` 直接执行、不会自动把 `node_modules/.bin` 加进 PATH，裸写会报 `/bin/sh: 1: wrangler: not found`（详见第七章「错误 5」）。
 4. 展开「环境变量 / 构建变量」与下方的「变量和机密」，按下文**环境变量速查表**逐项填写（A 类填构建变量，B 类填运行期变量，C 类填机密）。**首次部署只需填 `WORKER_NAME` 一项**，其余等构建通过后再补。
 5. 点击「保存并部署 / Deploy」。控制台会拉取代码、按上面命令构建并发布。此时即使没填 `DOMAIN`，也会先部署到默认 `*.workers.dev` 子域（功能受限）。
 6. **（后续）配置资源并补全功能**：在 Cloudflare 控制台创建 D1/R2/KV/Queue（见步骤 1）后，把 A/B/C 类变量补齐（构建变量 `D1_DATABASE_ID` 等 + 运行期变量），**再触发一次构建**——构建命令里的 `bun db:migrate` 会自动检测到 D1 并建表，随后部署即启用完整功能 + 自定义域。
@@ -350,6 +350,36 @@ error: script "build" exited with code 134
 构建 VM 有 8 GB 内存，6 GB 留足余量，无需你手动改 CF 配置。直接**重新触发一次构建**（推新提交，或对最新提交触发）即可。
 
 > 若日后模块更多、仍报 OOM，可在同一条命令把 `6144` 调到 `7168`（7 GB，仍低于 8 GB 上限），但不要超过 8 GB，否则会被系统 OOM-kill。
+
+---
+
+### 错误 5：`/bin/sh: 1: wrangler: not found`（部署阶段）
+
+**完整报错**（出现在「执行部署命令」阶段，`wrangler deploy` 时）：
+
+```
+Success: Build command completed
+Executing user deploy command: wrangler deploy
+/bin/sh: 1: wrangler: not found
+Failed: error occurred while running deploy command
+```
+
+**原因**：`wrangler` 是本项目的 **devDependency**（装在 `node_modules/.bin/wrangler`），**并不在全局 PATH** 上。Cloudflare 的部署命令由 `/bin/sh -c` 直接执行，**不会**自动把 `node_modules/.bin` 加进 PATH，因此裸写 `wrangler deploy` 会「找不到命令」。
+
+**修复**：Settings（设置）→ Build（构建）→ **部署命令（Deploy command）** 改为：
+
+```
+npx wrangler deploy
+```
+
+以下写法任选其一也可（效果相同）：
+
+```
+bunx wrangler deploy
+./node_modules/.bin/wrangler deploy
+```
+
+保存后重新触发构建即可。注意：构建步骤已 `bun install`，`node_modules/.bin/wrangler` 一定存在，所以 `npx` 会解析到本地版本、不会去联网下载。
 
 ---
 
