@@ -8,9 +8,7 @@
           "method": "GET",
           "path": "/posts",
           "summary": "List published posts",
-          "tags": [
-            "Posts"
-          ]
+          "tags": ["Posts"]
         }
       }
     },
@@ -22,9 +20,7 @@
           "method": "GET",
           "path": "/posts/home/page",
           "summary": "List homepage posts, pinned first",
-          "tags": [
-            "Posts"
-          ]
+          "tags": ["Posts"]
         }
       }
     },
@@ -36,9 +32,7 @@
           "method": "GET",
           "path": "/posts/{slug}",
           "summary": "Get a published post by slug",
-          "tags": [
-            "Posts"
-          ]
+          "tags": ["Posts"]
         }
       }
     },
@@ -50,9 +44,7 @@
           "method": "GET",
           "path": "/posts/{slug}/adjacent",
           "summary": "Get the adjacent published posts by publication date",
-          "tags": [
-            "Posts"
-          ]
+          "tags": ["Posts"]
         }
       }
     },
@@ -64,9 +56,7 @@
           "method": "GET",
           "path": "/posts/pinned",
           "summary": "List pinned published posts",
-          "tags": [
-            "Posts"
-          ]
+          "tags": ["Posts"]
         }
       }
     },
@@ -78,9 +68,7 @@
           "method": "GET",
           "path": "/posts/popular",
           "summary": "List popular published posts",
-          "tags": [
-            "Posts"
-          ]
+          "tags": ["Posts"]
         }
       }
     },
@@ -93,9 +81,7 @@
             "method": "GET",
             "path": "/admin/posts",
             "summary": "List posts for admin",
-            "tags": [
-              "Admin Posts"
-            ]
+            "tags": ["Admin Posts"]
           }
         }
       },
@@ -108,9 +94,7 @@
             "path": "/admin/posts/{id}",
             "summary": "Get a post by id",
             "description": "Returns the editable Post. publicSnapshotContentJson is the Public Content Snapshot body, used to preview published code highlighting in the editor. It is not the draft.",
-            "tags": [
-              "Admin Posts"
-            ]
+            "tags": ["Admin Posts"]
           }
         }
       },
@@ -122,9 +106,7 @@
             "method": "GET",
             "path": "/admin/posts/slug",
             "summary": "Generate a post slug",
-            "tags": [
-              "Admin Posts"
-            ]
+            "tags": ["Admin Posts"]
           }
         }
       },
@@ -137,9 +119,7 @@
             "path": "/admin/posts",
             "summary": "Create a draft post",
             "description": "With data, creates a new draft post carrying that content. Without data, returns an existing empty draft post when one exists, otherwise creates one.",
-            "tags": [
-              "Admin Posts"
-            ]
+            "tags": ["Admin Posts"]
           }
         }
       },
@@ -151,9 +131,7 @@
             "method": "PATCH",
             "path": "/admin/posts/{id}",
             "summary": "Update a post",
-            "tags": [
-              "Admin Posts"
-            ]
+            "tags": ["Admin Posts"]
           }
         }
       },
@@ -165,9 +143,7 @@
             "method": "DELETE",
             "path": "/admin/posts/{id}",
             "summary": "Delete a post",
-            "tags": [
-              "Admin Posts"
-            ]
+            "tags": ["Admin Posts"]
           }
         }
       },
@@ -180,9 +156,7 @@
             "path": "/admin/posts/{id}/publish",
             "summary": "Publish a post",
             "description": "Publishes the post and generates or updates its Public Content Snapshot. Code blocks are highlighted on the server and stored in the snapshot.",
-            "tags": [
-              "Admin Posts"
-            ]
+            "tags": ["Admin Posts"]
           }
         }
       },
@@ -194,9 +168,7 @@
             "method": "POST",
             "path": "/admin/posts/{id}/unpublish",
             "summary": "Unpublish a post",
-            "tags": [
-              "Admin Posts"
-            ]
+            "tags": ["Admin Posts"]
           }
         }
       },
@@ -209,9 +181,7 @@
               "method": "GET",
               "path": "/admin/posts/{postId}/revisions",
               "summary": "List post revisions",
-              "tags": [
-                "Admin Posts"
-              ]
+              "tags": ["Admin Posts"]
             }
           }
         },
@@ -223,9 +193,7 @@
               "method": "GET",
               "path": "/admin/posts/{postId}/revisions/{revisionId}",
               "summary": "Get a post revision",
-              "tags": [
-                "Admin Posts"
-              ]
+              "tags": ["Admin Posts"]
             }
           }
         },
@@ -237,9 +205,7 @@
               "method": "POST",
               "path": "/admin/posts/{postId}/revisions/{revisionId}/restore",
               "summary": "Restore a post revision",
-              "tags": [
-                "Admin Posts"
-              ]
+              "tags": ["Admin Posts"]
             }
           }
         },
@@ -251,9 +217,7 @@
               "method": "DELETE",
               "path": "/admin/posts/{postId}/revisions",
               "summary": "Delete post revisions",
-              "tags": [
-                "Admin Posts"
-              ]
+              "tags": ["Admin Posts"]
             }
           }
         }
@@ -269,9 +233,7 @@
           "method": "GET",
           "path": "/tags",
           "summary": "List public tags",
-          "tags": [
-            "Tags"
-          ]
+          "tags": ["Tags"]
         }
       }
     },
@@ -284,9 +246,7 @@
             "method": "GET",
             "path": "/admin/tags",
             "summary": "List tags for admin",
-            "tags": [
-              "Admin Tags"
-            ]
+            "tags": ["Admin Tags"]
           }
         }
       },
@@ -298,9 +258,7 @@
             "method": "GET",
             "path": "/admin/tags/with-count",
             "summary": "List tags with post counts",
-            "tags": [
-              "Admin Tags"
-            ]
+            "tags": ["Admin Tags"]
           }
         }
       },
@@ -312,9 +270,7 @@
             "method": "POST",
             "path": "/admin/tags",
             "summary": "Create a tag",
-            "tags": [
-              "Admin Tags"
-            ]
+            "tags": ["Admin Tags"]
           }
         }
       },
@@ -326,9 +282,7 @@
             "method": "PATCH",
             "path": "/admin/tags/{id}",
             "summary": "Update a tag",
-            "tags": [
-              "Admin Tags"
-            ]
+            "tags": ["Admin Tags"]
           }
         }
       },
@@ -340,9 +294,7 @@
             "method": "DELETE",
             "path": "/admin/tags/{id}",
             "summary": "Delete a tag",
-            "tags": [
-              "Admin Tags"
-            ]
+            "tags": ["Admin Tags"]
           }
         }
       },
@@ -354,9 +306,7 @@
             "method": "PUT",
             "path": "/admin/posts/{postId}/tags",
             "summary": "Set tags on a post",
-            "tags": [
-              "Admin Tags"
-            ]
+            "tags": ["Admin Tags"]
           }
         }
       },
@@ -368,9 +318,7 @@
             "method": "GET",
             "path": "/admin/posts/{postId}/tags",
             "summary": "List tags for a post",
-            "tags": [
-              "Admin Tags"
-            ]
+            "tags": ["Admin Tags"]
           }
         }
       }
@@ -385,9 +333,7 @@
           "method": "GET",
           "path": "/categories",
           "summary": "List public categories",
-          "tags": [
-            "Categories"
-          ]
+          "tags": ["Categories"]
         }
       }
     },
@@ -400,9 +346,7 @@
             "method": "GET",
             "path": "/admin/categories",
             "summary": "List categories for admin",
-            "tags": [
-              "Admin Categories"
-            ]
+            "tags": ["Admin Categories"]
           }
         }
       },
@@ -414,9 +358,7 @@
             "method": "GET",
             "path": "/admin/categories/options",
             "summary": "List category options",
-            "tags": [
-              "Admin Categories"
-            ]
+            "tags": ["Admin Categories"]
           }
         }
       },
@@ -428,9 +370,7 @@
             "method": "POST",
             "path": "/admin/categories",
             "summary": "Create a category",
-            "tags": [
-              "Admin Categories"
-            ]
+            "tags": ["Admin Categories"]
           }
         }
       },
@@ -442,9 +382,7 @@
             "method": "PATCH",
             "path": "/admin/categories/{id}",
             "summary": "Update a category",
-            "tags": [
-              "Admin Categories"
-            ]
+            "tags": ["Admin Categories"]
           }
         }
       },
@@ -456,9 +394,7 @@
             "method": "DELETE",
             "path": "/admin/categories/{id}",
             "summary": "Delete a category",
-            "tags": [
-              "Admin Categories"
-            ]
+            "tags": ["Admin Categories"]
           }
         }
       }
@@ -474,9 +410,7 @@
           "path": "/posts/{postId}/comments",
           "summary": "List root comments on a post",
           "description": "Returns visible root threads with reply previews. Offset and limit paginate root threads, including deleted roots that still have published replies. Total counts all published roots and replies on the post, excluding deleted placeholders; it must not be used to calculate root pagination.",
-          "tags": [
-            "Comments"
-          ]
+          "tags": ["Comments"]
         }
       }
     },
@@ -488,9 +422,7 @@
           "method": "GET",
           "path": "/posts/{postId}/comments/{rootId}/replies",
           "summary": "List replies in a comment thread",
-          "tags": [
-            "Comments"
-          ]
+          "tags": ["Comments"]
         }
       }
     },
@@ -502,9 +434,7 @@
           "method": "GET",
           "path": "/posts/{postId}/comments/{id}/thread",
           "summary": "Load the visible comment thread containing a comment",
-          "tags": [
-            "Comments"
-          ]
+          "tags": ["Comments"]
         }
       }
     },
@@ -516,9 +446,7 @@
           "method": "POST",
           "path": "/posts/{postId}/comments",
           "summary": "Create a comment",
-          "tags": [
-            "Comments"
-          ]
+          "tags": ["Comments"]
         }
       }
     },
@@ -530,9 +458,7 @@
           "method": "DELETE",
           "path": "/comments/{id}",
           "summary": "Delete own comment",
-          "tags": [
-            "Comments"
-          ]
+          "tags": ["Comments"]
         }
       }
     },
@@ -544,9 +470,7 @@
           "method": "GET",
           "path": "/me/comments",
           "summary": "List the current user's comments",
-          "tags": [
-            "Comments"
-          ]
+          "tags": ["Comments"]
         }
       }
     }
@@ -560,9 +484,7 @@
           "method": "GET",
           "path": "/admin/media",
           "summary": "List media",
-          "tags": [
-            "Admin Media"
-          ]
+          "tags": ["Admin Media"]
         }
       }
     },
@@ -574,9 +496,7 @@
           "method": "POST",
           "path": "/admin/media",
           "summary": "Upload an image",
-          "tags": [
-            "Admin Media"
-          ]
+          "tags": ["Admin Media"]
         }
       }
     },
@@ -588,9 +508,7 @@
           "method": "POST",
           "path": "/admin/media/import",
           "summary": "Import an image from a URL",
-          "tags": [
-            "Admin Media"
-          ]
+          "tags": ["Admin Media"]
         }
       }
     },
@@ -602,9 +520,7 @@
           "method": "GET",
           "path": "/admin/media/stats",
           "summary": "Get media library stats",
-          "tags": [
-            "Admin Media"
-          ]
+          "tags": ["Admin Media"]
         }
       }
     },
@@ -616,9 +532,7 @@
           "method": "GET",
           "path": "/admin/media/size",
           "summary": "Get total media size",
-          "tags": [
-            "Admin Media"
-          ]
+          "tags": ["Admin Media"]
         }
       }
     },
@@ -630,9 +544,7 @@
           "method": "POST",
           "path": "/admin/media/linked-keys",
           "summary": "Resolve which media keys are linked",
-          "tags": [
-            "Admin Media"
-          ]
+          "tags": ["Admin Media"]
         }
       }
     },
@@ -644,9 +556,7 @@
           "method": "DELETE",
           "path": "/admin/media/unused",
           "summary": "Delete unused media",
-          "tags": [
-            "Admin Media"
-          ]
+          "tags": ["Admin Media"]
         }
       }
     },
@@ -658,9 +568,7 @@
           "method": "DELETE",
           "path": "/admin/media/{key}",
           "summary": "Delete media",
-          "tags": [
-            "Admin Media"
-          ]
+          "tags": ["Admin Media"]
         }
       }
     },
@@ -672,9 +580,7 @@
           "method": "GET",
           "path": "/admin/media/{key}/posts",
           "summary": "List posts linked to media",
-          "tags": [
-            "Admin Media"
-          ]
+          "tags": ["Admin Media"]
         }
       }
     },
@@ -686,9 +592,7 @@
           "method": "POST",
           "path": "/admin/media/{key}/replace",
           "summary": "Replace media file",
-          "tags": [
-            "Admin Media"
-          ]
+          "tags": ["Admin Media"]
         }
       }
     },
@@ -700,9 +604,7 @@
           "method": "PATCH",
           "path": "/admin/media/{key}",
           "summary": "Rename media",
-          "tags": [
-            "Admin Media"
-          ]
+          "tags": ["Admin Media"]
         }
       }
     }
@@ -716,9 +618,7 @@
           "method": "GET",
           "path": "/admin/muted-users",
           "summary": "List currently muted users",
-          "tags": [
-            "Admin Muted Users"
-          ]
+          "tags": ["Admin Muted Users"]
         }
       }
     },
@@ -730,9 +630,7 @@
           "method": "POST",
           "path": "/admin/muted-users",
           "summary": "Mute a user",
-          "tags": [
-            "Admin Muted Users"
-          ]
+          "tags": ["Admin Muted Users"]
         }
       }
     },
@@ -744,9 +642,7 @@
           "method": "DELETE",
           "path": "/admin/muted-users/{userId}",
           "summary": "Unmute a user",
-          "tags": [
-            "Admin Muted Users"
-          ]
+          "tags": ["Admin Muted Users"]
         }
       }
     }
@@ -760,9 +656,7 @@
           "method": "GET",
           "path": "/site/config",
           "summary": "Get public site config",
-          "tags": [
-            "Site"
-          ]
+          "tags": ["Site"]
         }
       }
     },
@@ -774,9 +668,7 @@
           "method": "GET",
           "path": "/site/domain",
           "summary": "Get the public site domain",
-          "tags": [
-            "Site"
-          ]
+          "tags": ["Site"]
         }
       }
     },
@@ -788,9 +680,7 @@
           "method": "GET",
           "path": "/site/social-providers",
           "summary": "Which social login providers are available",
-          "tags": [
-            "Site"
-          ]
+          "tags": ["Site"]
         }
       }
     },
@@ -804,9 +694,7 @@
             "path": "/admin/config",
             "summary": "Get system config",
             "description": "Returns a fresh database snapshot with redacted secrets and independent site/notification revisions. Internal runtime and public Site Config formats are unchanged.",
-            "tags": [
-              "Admin Config"
-            ]
+            "tags": ["Admin Config"]
           }
         }
       },
@@ -819,9 +707,7 @@
             "path": "/admin/config",
             "summary": "Update system config",
             "description": "Replaces only the named section and preserves the other section. Read GET /admin/config first and submit the selected section revision; unversioned legacy writes are rejected. Omitted Site Config fields use defaults, so normally submit the complete returned config.site. Notification updates include email, rules and explicit keep/replace/clear secret actions. Same-section conflicts return 409; refetch and reconcile the draft rather than blindly retrying.",
-            "tags": [
-              "Admin Config"
-            ]
+            "tags": ["Admin Config"]
           }
         }
       },
@@ -834,9 +720,7 @@
             "path": "/admin/config/assets",
             "summary": "Upload a site asset",
             "description": "Uploads immediately to the selected object-storage path. Discarding an unsaved settings draft does not revert uploaded image content.",
-            "tags": [
-              "Admin Config"
-            ]
+            "tags": ["Admin Config"]
           }
         }
       }
@@ -852,9 +736,7 @@
           "path": "/admin/admin-console",
           "summary": "Get administrator password sign-in status",
           "description": "Returns whether the standalone /console username + password entry is enabled, plus the configured login name.",
-          "tags": [
-            "Admin Console"
-          ]
+          "tags": ["Admin Console"]
         }
       }
     },
@@ -867,9 +749,7 @@
           "path": "/admin/admin-console",
           "summary": "Create or reset the administrator password sign-in",
           "description": "Creates the internal administrator account for /console, or replaces it when the login name already exists. Replacing invalidates all of its sessions. The password is never stored in the site configuration.",
-          "tags": [
-            "Admin Console"
-          ]
+          "tags": ["Admin Console"]
         }
       }
     },
@@ -882,9 +762,7 @@
           "path": "/admin/admin-console",
           "summary": "Disable the administrator password sign-in",
           "description": "Deletes the internal administrator account and turns off /console. Email and GitHub sign-in are unaffected.",
-          "tags": [
-            "Admin Console"
-          ]
+          "tags": ["Admin Console"]
         }
       }
     }
@@ -898,9 +776,7 @@
           "method": "GET",
           "path": "/friend-links",
           "summary": "List approved friend links",
-          "tags": [
-            "Friend Links"
-          ]
+          "tags": ["Friend Links"]
         }
       }
     },
@@ -913,9 +789,7 @@
           "path": "/friend-links",
           "summary": "Submit or resubmit a friend link",
           "description": "Notifications use the applicant’s current account email. No contact email is stored or accepted. An optional id revises an owned rejected application in place; pending and approved applications cannot be resubmitted.",
-          "tags": [
-            "Friend Links"
-          ]
+          "tags": ["Friend Links"]
         }
       }
     },
@@ -927,9 +801,7 @@
           "method": "GET",
           "path": "/me/friend-links",
           "summary": "List the current user's friend links",
-          "tags": [
-            "Friend Links"
-          ]
+          "tags": ["Friend Links"]
         }
       }
     },
@@ -942,9 +814,7 @@
             "method": "GET",
             "path": "/admin/friend-links",
             "summary": "List friend links for admin",
-            "tags": [
-              "Admin Friend Links"
-            ]
+            "tags": ["Admin Friend Links"]
           }
         }
       },
@@ -956,9 +826,7 @@
             "method": "POST",
             "path": "/admin/friend-links",
             "summary": "Create a friend link",
-            "tags": [
-              "Admin Friend Links"
-            ]
+            "tags": ["Admin Friend Links"]
           }
         }
       },
@@ -970,9 +838,7 @@
             "method": "PATCH",
             "path": "/admin/friend-links/{id}",
             "summary": "Update a friend link",
-            "tags": [
-              "Admin Friend Links"
-            ]
+            "tags": ["Admin Friend Links"]
           }
         }
       },
@@ -984,9 +850,7 @@
             "method": "POST",
             "path": "/admin/friend-links/{id}/approve",
             "summary": "Approve a friend link",
-            "tags": [
-              "Admin Friend Links"
-            ]
+            "tags": ["Admin Friend Links"]
           }
         }
       },
@@ -998,9 +862,7 @@
             "method": "POST",
             "path": "/admin/friend-links/{id}/reject",
             "summary": "Reject a friend link",
-            "tags": [
-              "Admin Friend Links"
-            ]
+            "tags": ["Admin Friend Links"]
           }
         }
       },
@@ -1012,9 +874,7 @@
             "method": "DELETE",
             "path": "/admin/friend-links/{id}",
             "summary": "Delete a friend link",
-            "tags": [
-              "Admin Friend Links"
-            ]
+            "tags": ["Admin Friend Links"]
           }
         }
       }
@@ -1030,9 +890,7 @@
           "path": "/admin/import-export/export",
           "summary": "Start a full-site backup export",
           "description": "Packages posts, tags, categories, comments, friend links, site settings and media files into a ZIP that is stored in R2 for 24 hours.",
-          "tags": [
-            "Admin Import Export"
-          ]
+          "tags": ["Admin Import Export"]
         }
       }
     },
@@ -1044,9 +902,7 @@
           "method": "GET",
           "path": "/admin/import-export/export/progress",
           "summary": "Poll the backup export progress",
-          "tags": [
-            "Admin Import Export"
-          ]
+          "tags": ["Admin Import Export"]
         }
       }
     },
@@ -1059,9 +915,7 @@
           "path": "/admin/import-export/import",
           "summary": "Upload a backup archive to restore",
           "description": "Accepts a ZIP exported by this system, or a ZIP of Markdown files from Hugo / Hexo / Jekyll. Existing slugs are skipped, everything else is merged in.",
-          "tags": [
-            "Admin Import Export"
-          ]
+          "tags": ["Admin Import Export"]
         }
       }
     },
@@ -1073,9 +927,7 @@
           "method": "GET",
           "path": "/admin/import-export/import/progress",
           "summary": "Poll the backup restore progress",
-          "tags": [
-            "Admin Import Export"
-          ]
+          "tags": ["Admin Import Export"]
         }
       }
     }
@@ -1089,9 +941,7 @@
           "method": "GET",
           "path": "/email/configured",
           "summary": "Check if email is configured",
-          "tags": [
-            "Email"
-          ]
+          "tags": ["Email"]
         }
       }
     },
@@ -1103,9 +953,7 @@
           "method": "POST",
           "path": "/email/unsubscribe",
           "summary": "Unsubscribe from email notifications",
-          "tags": [
-            "Email"
-          ]
+          "tags": ["Email"]
         }
       }
     },
@@ -1117,9 +965,7 @@
           "method": "GET",
           "path": "/me/notifications/reply",
           "summary": "Get reply notification status",
-          "tags": [
-            "Email"
-          ]
+          "tags": ["Email"]
         }
       }
     },
@@ -1131,9 +977,7 @@
           "method": "GET",
           "path": "/me/notifications/availability",
           "summary": "Get notification availability",
-          "tags": [
-            "Email"
-          ]
+          "tags": ["Email"]
         }
       }
     },
@@ -1145,9 +989,7 @@
           "method": "PATCH",
           "path": "/me/notifications/reply",
           "summary": "Toggle reply notifications",
-          "tags": [
-            "Email"
-          ]
+          "tags": ["Email"]
         }
       }
     },
@@ -1160,9 +1002,7 @@
           "path": "/admin/email/test",
           "summary": "Send a test email",
           "description": "Tests the supplied connection without saving settings. The secret accepts replace with a new value or keep with the notification section expectedRevision; keep resolves the saved secret server-side and rejects stale revisions with CONFIG_CONFLICT. Saved secrets are never returned.",
-          "tags": [
-            "Admin Email"
-          ]
+          "tags": ["Admin Email"]
         }
       }
     },
@@ -1174,9 +1014,7 @@
           "method": "GET",
           "path": "/me/has-password",
           "summary": "Check if the current user has a password",
-          "tags": [
-            "Auth"
-          ]
+          "tags": ["Auth"]
         }
       }
     }
@@ -1190,9 +1028,7 @@
           "method": "GET",
           "path": "/search",
           "summary": "Search published posts",
-          "tags": [
-            "Search"
-          ]
+          "tags": ["Search"]
         }
       }
     },
@@ -1204,9 +1040,7 @@
           "method": "GET",
           "path": "/search/version",
           "summary": "Get search index version",
-          "tags": [
-            "Search"
-          ]
+          "tags": ["Search"]
         }
       }
     },
@@ -1218,9 +1052,7 @@
           "method": "POST",
           "path": "/admin/search/rebuild",
           "summary": "Rebuild the search index",
-          "tags": [
-            "Admin Search"
-          ]
+          "tags": ["Admin Search"]
         }
       }
     }
@@ -1234,9 +1066,7 @@
           "method": "GET",
           "path": "/admin/post-popularity",
           "summary": "Get post popularity sync status",
-          "tags": [
-            "Admin Post Popularity"
-          ]
+          "tags": ["Admin Post Popularity"]
         }
       }
     },
@@ -1248,9 +1078,7 @@
           "method": "POST",
           "path": "/admin/post-popularity/sync",
           "summary": "Sync post popularity from Umami",
-          "tags": [
-            "Admin Post Popularity"
-          ]
+          "tags": ["Admin Post Popularity"]
         }
       }
     }
@@ -1264,9 +1092,7 @@
           "method": "GET",
           "path": "/admin/dashboard",
           "summary": "Get admin dashboard overview",
-          "tags": [
-            "Admin Dashboard"
-          ]
+          "tags": ["Admin Dashboard"]
         }
       }
     }
@@ -1280,9 +1106,7 @@
           "method": "POST",
           "path": "/admin/cache/invalidate",
           "summary": "Invalidate the public cache",
-          "tags": [
-            "Admin Cache"
-          ]
+          "tags": ["Admin Cache"]
         }
       }
     }
@@ -1296,9 +1120,7 @@
           "method": "GET",
           "path": "/admin/version",
           "summary": "Check for application updates",
-          "tags": [
-            "Admin Version"
-          ]
+          "tags": ["Admin Version"]
         }
       }
     },
@@ -1310,9 +1132,7 @@
           "method": "POST",
           "path": "/admin/version/check",
           "summary": "Force-check for application updates",
-          "tags": [
-            "Admin Version"
-          ]
+          "tags": ["Admin Version"]
         }
       }
     }
@@ -1327,9 +1147,7 @@
           "path": "/admin/webhooks/test",
           "summary": "Send a test webhook",
           "description": "Tests the supplied connection without saving settings. The secret accepts replace with a new value or keep with the notification section expectedRevision; keep resolves the saved secret server-side and rejects stale revisions with CONFIG_CONFLICT. Saved secrets are never returned.",
-          "tags": [
-            "Admin Webhooks"
-          ]
+          "tags": ["Admin Webhooks"]
         }
       }
     }
